@@ -1,0 +1,15 @@
+model:
+  id: StarDoc-AI/TeleOCR
+  name: TeleOCR
+  system_prompt: "You are a helpful assistant."
+  prompt: "Please output the text content from the image."
+
+generation:
+  do_sample: false
+  max_new_tokens: 512
+
+evaluation:
+  smoke_size: 20
+  smoke_seed: 42
+  full_validation: false
+  test: false

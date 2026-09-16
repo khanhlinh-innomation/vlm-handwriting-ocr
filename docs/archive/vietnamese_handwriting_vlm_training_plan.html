@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vietnamese Handwriting VLM Fine-tuning — Living Plan</title>
+<style>
+:root{
+  --bg:#f5f7fb; --paper:#fff; --ink:#172033; --muted:#667085; --line:#e4e7ec;
+  --accent:#4f46e5; --soft:#eef2ff; --good:#067647; --goodbg:#ecfdf3;
+  --warn:#b54708; --warnbg:#fffaeb; --code:#101828;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.58;font-size:15.5px;
+}
+.shell{max-width:1160px;margin:0 auto;padding:34px 22px 82px 225px}
+.hero{
+  background:linear-gradient(135deg,#171d4f 0%,#312e81 56%,#5b21b6 100%);
+  color:white;border-radius:22px;padding:36px 40px;box-shadow:0 18px 48px rgba(49,46,129,.18)
+}
+.kicker{font-size:12px;letter-spacing:.11em;text-transform:uppercase;opacity:.72;font-weight:800}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.05;margin:8px 0 13px;letter-spacing:-.035em}
+.hero p{max-width:900px;color:#e0e7ff;margin:0 0 22px}
+.hero-row{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.hero .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16)}
+.dot{width:7px;height:7px;border-radius:50%;background:#a5b4fc}
+nav{
+  position:fixed;
+  left:20px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:10;
+  width:190px;
+  padding:10px;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 12px 32px rgba(16,24,40,.10);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+nav::before{
+  content:"CONTENTS";
+  display:block;
+  padding:5px 9px 7px;
+  font-size:10px;
+  letter-spacing:.11em;
+  font-weight:800;
+  color:#98a2b3;
+}
+nav a{
+  white-space:normal;
+  text-decoration:none;
+  color:#344054;
+  padding:9px 10px;
+  border-radius:9px;
+  font-size:12.5px;
+  font-weight:700;
+  line-height:1.3;
+}
+nav a:hover{
+  background:var(--soft);
+  color:var(--accent);
+}
+section{
+  background:var(--paper);border:1px solid var(--line);border-radius:18px;
+  padding:29px 31px;margin:18px 0;box-shadow:0 8px 24px rgba(16,24,40,.035)
+}
+.section-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.num{flex:none;width:34px;height:34px;border-radius:10px;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-weight:850;font-size:13px}
+h2{margin:1px 0 4px;font-size:24px;line-height:1.2;letter-spacing:-.018em}
+h3{font-size:17px;margin:22px 0 8px}
+h4{font-size:14px;margin:13px 0 5px;color:#344054}
+p{margin:8px 0 12px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{border:1px solid var(--line);border-radius:13px;padding:16px;background:#fff}
+.card.soft{background:#fafbff}
+.metric{font-size:26px;font-weight:850;letter-spacing:-.025em;color:#101828}
+.label{font-size:12px;color:var(--muted);margin-top:2px}
+.status{font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px;display:inline-block}
+.todo{background:#f2f4f7;color:#475467}
+.plan{background:var(--soft);color:var(--accent)}
+.good{background:var(--goodbg);color:var(--good)}
+.warn{background:var(--warnbg);color:var(--warn)}
+table{width:100%;border-collapse:separate;border-spacing:0;margin:14px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+th:last-child,td:last-child{border-right:0} tr:last-child td{border-bottom:0}
+th{background:#f8fafc;color:#475467;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+tbody tr:nth-child(even) td{background:#fcfcfd}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0}
+.flow span{padding:8px 10px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;font-size:13px;font-weight:700}
+.flow b{color:#98a2b3}
+.note{border-left:4px solid var(--accent);background:var(--soft);padding:12px 15px;border-radius:0 10px 10px 0;margin:13px 0;color:#344054}
+.note.warnbox{border-left-color:#f79009;background:var(--warnbg)}
+.note.goodbox{border-left-color:#12b76a;background:var(--goodbg)}
+code{font-family:"SFMono-Regular",Consolas,monospace;background:#f2f4f7;border:1px solid var(--line);border-radius:5px;padding:2px 5px;font-size:.9em}
+pre{background:var(--code);color:#e5e7eb;padding:14px 16px;border-radius:11px;overflow:auto;font-size:13px;line-height:1.55}
+ul,ol{padding-left:21px} li{margin:5px 0}
+.samples{display:grid;grid-template-columns:1fr 1.65fr 1.65fr;gap:12px;margin-top:14px}
+.sample{border:1px solid var(--line);border-radius:12px;background:#fbfcfe;padding:10px;margin:0}
+.sample img{width:100%;height:135px;object-fit:contain;background:white;border-radius:8px;display:block;border:1px solid #f2f4f7}
+.sample figcaption{font-size:11.5px;color:var(--muted);margin-top:7px}
+.model-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.model-name{font-size:22px;font-weight:850;letter-spacing:-.015em}
+.model-meta{color:var(--muted);font-size:13px}
+.timeline{border-left:2px solid #d0d5dd;margin-left:8px;padding-left:22px}
+.update{position:relative;padding:4px 0 18px}
+.update:before{content:"";position:absolute;left:-28px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--soft)}
+.update-date{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+.template{border:1px dashed #98a2b3;background:#fcfcfd;border-radius:12px;padding:15px;margin-top:12px}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
+@media(max-width:1100px){
+  .shell{padding:28px 18px 70px 210px}
+  nav{left:14px;width:180px}
+}
+@media(max-width:860px){
+  .g4,.g3,.g2,.samples{grid-template-columns:1fr}
+  section{padding:22px 18px}
+  .hero{padding:28px 22px}
+  .shell{padding:20px 10px 55px}
+  table{display:block;overflow-x:auto}
+  nav{
+    position:sticky;
+    top:0;
+    left:auto;
+    transform:none;
+    width:auto;
+    margin:16px 0 22px;
+    padding:9px 10px;
+    flex-direction:row;
+    overflow-x:auto;
+    border-radius:14px;
+  }
+  nav::before{display:none}
+  nav a{white-space:nowrap;padding:7px 10px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header class="hero">
+  <div class="kicker">Living training report · Vietnamese handwriting OCR</div>
+  <h1>Fine-tuning 3 VLMs on UIT-HWDB</h1>
+  <p>
+    Training plan and experiment log for <strong>GLM-OCR</strong>, <strong>NaviDC-OCR</strong>,
+    and <strong>PaddleOCR-VL-1.6</strong>. The plan is maintained as a living report so the team lead can review
+    objectives, configuration, progress, measured resource usage, blockers, and next steps in one place.
+  </p>
+  <div class="hero-row">
+    <span class="pill"><span class="dot"></span> Current phase: Planning / Data preparation</span>
+    <span class="pill">Primary dataset: UIT-HWDB-line</span>
+    <span class="pill">Compute policy: Kaggle-first</span>
+    <span class="pill">Primary metric: CER ↓</span>
+    <span class="pill">Last update: 2026-09-14</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#overview">1. Overview</a>
+  <a href="#data">2. Data</a>
+  <a href="#glm">3. GLM-OCR</a>
+  <a href="#navidc">4. NaviDC</a>
+  <a href="#paddle">5. PaddleOCR-VL</a>
+  <a href="#training">6. Training plan</a>
+  <a href="#updates">7. Progress updates</a>
+</nav>
+
+<section id="overview">
+  <div class="section-head"><div class="num">01</div><div><h2>Overview</h2><div class="muted">Experiment objective, comparison rules, compute policy, and expected outputs.</div></div></div>
+
+  <div class="grid g4">
+    <div class="card soft"><div class="metric">3</div><div class="label">VLM candidates</div></div>
+    <div class="card soft"><div class="metric">7,273</div><div class="label">primary line samples</div></div>
+    <div class="card soft"><div class="metric">CER ↓</div><div class="label">main OCR metric</div></div>
+    <div class="card soft"><div class="metric">Kaggle-first</div><div class="label">compute allocation strategy</div></div>
+  </div>
+
+  <p>
+    The first round answers one question: <strong>given the same Vietnamese handwriting data,
+    which model adapts best to line-level OCR?</strong>
+  </p>
+
+  <div class="note goodbox">
+    <strong>Compute policy:</strong> all three pipelines will be attempted on Kaggle first whenever technically feasible.
+    The purpose of the smoke run is not only to validate training correctness, but also to measure peak GPU VRAM and throughput.
+    Team GPU resources will be requested only if Kaggle is insufficient because of OOM, unsupported framework/runtime requirements,
+    or an impractically slow full-run estimate.
+  </div>
+
+  <div class="flow">
+    <span>same master data</span><b>→</b>
+    <span>same split</span><b>→</b>
+    <span>base benchmark</span><b>→</b>
+    <span>Kaggle smoke run</span><b>→</b>
+    <span>measure VRAM / speed</span><b>→</b>
+    <span>Kaggle full run or team GPU request</span>
+  </div>
+
+  <h3>Common experiment contract</h3>
+  <table>
+    <tr><th>Aspect</th><th>Rule</th><th>Reason</th></tr>
+    <tr><td>Input</td><td>One handwritten line image</td><td>Matches the intended production granularity</td></tr>
+    <tr><td>Target</td><td>Exact transcription with Vietnamese diacritics, punctuation, and valid spacing preserved</td><td>Keeps the experiment focused on recognition</td></tr>
+    <tr><td>Split</td><td>Identical train / validation / test IDs across all models</td><td>Fair comparison</td></tr>
+    <tr><td>Metrics</td><td>Strict CER primary; WER, Exact-Line Accuracy, and diacritic error secondary</td><td>Captures Vietnamese OCR quality</td></tr>
+    <tr><td>Checkpoint</td><td>Select by lowest validation CER</td><td>Reduces overfitting risk</td></tr>
+    <tr><td>Compute</td><td>Kaggle first; request team GPU only after a measured need is established</td><td>Avoids unnecessary internal GPU allocation</td></tr>
+  </table>
+</section>
+
+<section id="data">
+  <div class="section-head"><div class="num">02</div><div><h2>Data — UIT-HWDB</h2><div class="muted">Dataset inventory, examples, subset selection, split strategy, and preprocessing.</div></div></div>
+
+  <h3>2.1 Dataset inventory</h3>
+  <p>UIT-HWDB contains three subsets with <strong>119,162 images in total</strong>.</p>
+
+  <table>
+    <tr><th>Subset</th><th>Samples</th><th>Granularity</th><th>Role in this plan</th></tr>
+    <tr><td><strong>UIT-HWDB-word</strong></td><td><strong>110,745</strong></td><td>Single word / very short text</td><td><span class="status todo">ROUND 1: NOT USED</span><br>Potential later augmentation source, but excluded initially to prevent short-sequence dominance.</td></tr>
+    <tr><td><strong>UIT-HWDB-line</strong></td><td><strong>7,273</strong></td><td>One complete text line</td><td><span class="status good">PRIMARY DATASET</span><br>Closest match to the intended line-crop OCR task.</td></tr>
+    <tr><td><strong>UIT-HWDB-paragraph</strong></td><td><strong>1,144</strong></td><td>Multi-line paragraph</td><td><span class="status todo">ROUND 1: NOT USED</span><br>Possible later use for longer-context evaluation or additional line extraction.</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>119,162</strong></td><td>Word + line + paragraph</td><td>Overall inventory; round 1 trains on line samples only.</td></tr>
+  </table>
+
+  <h3>2.2 Sample images</h3>
+  <div class="samples">
+    <figure class="sample"><img src="https://raw.githubusercontent.com/nghiangh/UIT-HWDB-dataset/master/images/words/1.jpg" alt="word sample"><figcaption><strong>Word sample</strong> — 110,745 images.</figcaption></figure>
+    <figure class="sample"><img src="https://raw.githubusercontent.com/nghiangh/UIT-HWDB-dataset/master/images/lines/1.png" alt="line sample"><figcaption><strong>Line sample</strong> — primary round-1 granularity; 7,273 images.</figcaption></figure>
+    <figure class="sample"><img src="https://raw.githubusercontent.com/nghiangh/UIT-HWDB-dataset/master/images/paragraphs/2.jpg" alt="paragraph sample"><figcaption><strong>Paragraph sample</strong> — 1,144 multi-line images.</figcaption></figure>
+  </div>
+
+  <h3>2.3 Why line-level data first?</h3>
+  <div class="grid g3">
+    <div class="card soft"><h4>Production match</h4><p class="small">The intended recognizer receives line crops, so line supervision is the closest training distribution.</p></div>
+    <div class="card soft"><h4>Avoid imbalance</h4><p class="small">110k word samples would dominate a 7.3k-line dataset and shift training toward very short sequences.</p></div>
+    <div class="card soft"><h4>Cleaner comparison</h4><p class="small">One granularity isolates model behavior before adding augmentation strategies.</p></div>
+  </div>
+
+  <h3>2.4 Split plan</h3>
+  <p>Use an official split if it is available and suitable. Otherwise, use this fallback:</p>
+  <table>
+    <tr><th>Split</th><th>Ratio</th><th>Approx. samples</th><th>Usage</th></tr>
+    <tr><td>Train</td><td>80%</td><td><strong>5,818</strong></td><td>Optimization</td></tr>
+    <tr><td>Validation</td><td>10%</td><td><strong>727</strong></td><td>Checkpoint selection and overfitting signal</td></tr>
+    <tr><td>Test</td><td>10%</td><td><strong>728</strong></td><td>Final comparison only</td></tr>
+  </table>
+
+  <div class="note warnbox">
+    <strong>Leakage check:</strong> inspect metadata, filenames, and source grouping before freezing the split.
+    If writer identity can be recovered, prefer a writer-disjoint split over random line-level sampling.
+  </div>
+
+  <h3>2.5 Data preprocessing</h3>
+  <div class="flow">
+    <span>download all subsets</span><b>→</b>
+    <span>inspect structure</span><b>→</b>
+    <span>select line subset</span><b>→</b>
+    <span>validate images / labels</span><b>→</b>
+    <span>NFC normalization</span><b>→</b>
+    <span>freeze split</span><b>→</b>
+    <span>master manifest</span>
+  </div>
+
+  <table>
+    <tr><th>Check</th><th>What to record</th><th>Why</th></tr>
+    <tr><td>Images</td><td>width, height, aspect ratio, corrupt files</td><td>Processor configuration and outlier detection</td></tr>
+    <tr><td>Text</td><td>length p50/p90/p99, Unicode, empty labels</td><td>Sequence-length planning</td></tr>
+    <tr><td>Vietnamese</td><td>character and diacritic distribution</td><td>Ensure orthographic coverage</td></tr>
+    <tr><td>Duplicates</td><td>duplicate image / label / near-duplicate if needed</td><td>Reduce leakage</td></tr>
+    <tr><td>Grouping</td><td>writer/source identifiers if available</td><td>Group-aware splitting</td></tr>
+  </table>
+
+  <h3>2.6 Master manifest</h3>
+  <pre>{
+  "id": "line_000123",
+  "image": "images/line_000123.png",
+  "text": "Ground-truth text with Vietnamese diacritics preserved.",
+  "writer_id": "writer_or_source_if_available",
+  "split": "train",
+  "source": "UIT-HWDB-line"
+}</pre>
+</section>
+
+<section id="glm">
+  <div class="section-head"><div class="num">03</div><div style="width:100%"><div class="model-top"><div><div class="model-name">GLM-OCR</div><div class="model-meta">~0.9B · OCR-specific · official LLaMA-Factory fine-tuning guide</div></div><span class="status todo">NOT STARTED</span></div></div></div>
+
+  <h3>3.1 Why include GLM-OCR?</h3>
+  <p>GLM-OCR has the clearest training path among the three candidates. It is the preferred first pipeline for validating dataset conversion, evaluation, logging, and smoke-run procedures.</p>
+
+  <h3>3.2 Planned training path</h3>
+  <table>
+    <tr><th>Item</th><th>Plan</th></tr>
+    <tr><td>Framework</td><td><strong>LLaMA-Factory</strong></td></tr>
+    <tr><td>Method</td><td><strong>LoRA</strong></td></tr>
+    <tr><td>Prompt / template</td><td><code>&lt;image&gt;Text Recognition:</code></td></tr>
+    <tr><td>LoRA</td><td>rank 8 · official-style target setup</td></tr>
+    <tr><td>Learning rate</td><td>1e-4</td></tr>
+    <tr><td>Epochs</td><td>3</td></tr>
+    <tr><td>Precision</td><td>BF16</td></tr>
+    <tr><td>Effective batch</td><td>16</td></tr>
+  </table>
+
+  <h3>3.3 Compute plan</h3>
+  <div class="grid g3">
+    <div class="card soft"><div class="metric">8–12 GB</div><div class="label">initial GPU VRAM planning range</div></div>
+    <div class="card soft"><div class="metric">17,454</div><div class="label">train sample exposures @ 3 epochs</div></div>
+    <div class="card soft"><div class="metric">Kaggle first</div><div class="label">request team GPU only if measured need appears</div></div>
+  </div>
+</section>
+
+<section id="navidc">
+  <div class="section-head"><div class="num">04</div><div style="width:100%"><div class="model-top"><div><div class="model-name">NaviDC-OCR</div><div class="model-meta">~1.2B · document OCR / parsing · Qwen2.5-VL / Qwen ecosystem</div></div><span class="status todo">NOT STARTED</span></div></div></div>
+
+  <h3>4.1 Why include NaviDC?</h3>
+  <p>NaviDC is small enough to be attractive for deployment and previously showed favorable inference speed internally. Fine-tuning will test whether LoRA can substantially improve Vietnamese handwriting recognition.</p>
+
+  <h3>4.2 Training uncertainty</h3>
+  <div class="note warnbox">
+    NaviDC does not currently have an official fine-tuning recipe as clear as GLM-OCR. The configuration below is a proposed starting point, so smoke-test compatibility is mandatory.
+  </div>
+
+  <table>
+    <tr><th>Item</th><th>Plan</th></tr>
+    <tr><td>Primary framework</td><td><strong>ms-swift + PEFT LoRA</strong></td></tr>
+    <tr><td>Fallback</td><td>Transformers custom class + PEFT + custom Trainer/collator</td></tr>
+    <tr><td>Trainable target</td><td>LoRA on language model; freeze vision encoder and projector for first run</td></tr>
+    <tr><td>LoRA</td><td>rank 8 · alpha 32</td></tr>
+    <tr><td>Learning rate</td><td>1e-4 proposed</td></tr>
+    <tr><td>Epochs</td><td>3 if smoke passes</td></tr>
+    <tr><td>Precision</td><td>BF16</td></tr>
+    <tr><td>Effective batch</td><td>16, with micro-batch adjusted to VRAM</td></tr>
+  </table>
+
+  <h3>4.3 Compute plan</h3>
+  <div class="grid g3">
+    <div class="card soft"><div class="metric">12–20 GB</div><div class="label">initial GPU VRAM planning range</div></div>
+    <div class="card soft"><div class="metric">17,454</div><div class="label">train sample exposures @ 3 epochs</div></div>
+    <div class="card soft"><div class="metric">Kaggle first</div><div class="label">move to team 24GB+ GPU only if Kaggle is insufficient</div></div>
+  </div>
+</section>
+
+<section id="paddle">
+  <div class="section-head"><div class="num">05</div><div style="width:100%"><div class="model-top"><div><div class="model-name">PaddleOCR-VL-1.6</div><div class="model-meta">Paddle / ERNIE ecosystem · official ERNIEKit SFT path</div></div><span class="status todo">NOT STARTED</span></div></div></div>
+
+  <h3>5.1 Why include PaddleOCR-VL?</h3>
+  <p>PaddleOCR-VL remains in the shortlist because it has the most favorable production-integration path in the original runtime plan, and ERNIEKit provides a reference SFT setup.</p>
+
+  <h3>5.2 Planned training path</h3>
+  <table>
+    <tr><th>Item</th><th>Plan</th></tr>
+    <tr><td>Framework</td><td><strong>ERNIEKit</strong></td></tr>
+    <tr><td>Method</td><td><strong>Full SFT</strong> for round 1</td></tr>
+    <tr><td>Learning rate</td><td>5e-6 initial reference</td></tr>
+    <tr><td>Epochs</td><td><strong>2 initially; optional 3rd only if validation CER continues to improve</strong></td></tr>
+    <tr><td>Precision</td><td>BF16</td></tr>
+    <tr><td>Acceleration</td><td>Flash Attention / packing when supported</td></tr>
+  </table>
+
+  <h3>5.3 Why start with 2 epochs?</h3>
+  <div class="note">
+    <strong>The training set is small relative to the model, and Paddle is being fully fine-tuned rather than adapted with LoRA.</strong>
+    Full SFT updates the whole model, which increases overfitting and catastrophic-forgetting risk on approximately 5.8k training lines.
+    Therefore, two epochs are used as the initial full run. A third epoch is launched only if validation CER still improves after epoch 2.
+  </div>
+  <ul>
+    <li>Validation CER improves from epoch 1 → 2: consider epoch 3.</li>
+    <li>Training loss decreases but validation CER worsens: stop after epoch 2.</li>
+    <li>The selected checkpoint is the epoch with the lowest validation CER.</li>
+  </ul>
+
+  <h3>5.4 Compute plan</h3>
+  <div class="grid g3">
+    <div class="card soft"><div class="metric">24 GB+</div><div class="label">initial full-SFT VRAM planning floor</div></div>
+    <div class="card soft"><div class="metric">40 GB+</div><div class="label">preferred headroom if a team GPU is required</div></div>
+    <div class="card soft"><div class="metric">Kaggle first</div><div class="label">attempt setup/smoke first; escalate only if measured need requires it</div></div>
+  </div>
+
+  <div class="note warnbox">
+    Paddle is the model most likely to require a team GPU for full SFT. However, the plan is still to attempt dataset loading,
+    forward/backward compatibility, and a small smoke run on Kaggle first. A team GPU request will include measured peak VRAM,
+    failure mode (for example OOM), and the estimated full-run requirement.
+  </div>
+</section>
+
+<section id="training">
+  <div class="section-head"><div class="num">06</div><div><h2>Training plan, GPU sizing, workload & evaluation</h2><div class="muted">Run order, VRAM planning, escalation rules, workload, and evaluation.</div></div></div>
+
+  <h3>6.1 Prompt consistency</h3>
+  <div class="note goodbox">
+    The semantic task is identical for all models: read the image and return the exact transcription with no explanation.
+    Prompt strings or special tokens may differ because each model has a different native multimodal template.
+  </div>
+
+  <h3>6.2 Kaggle-first compute strategy</h3>
+  <table>
+    <tr><th>Stage</th><th>Default action</th><th>Escalation condition</th></tr>
+    <tr><td>Environment setup</td><td>Kaggle</td><td>Framework or CUDA stack cannot run reliably on Kaggle</td></tr>
+    <tr><td>Smoke training</td><td>Kaggle</td><td>OOM, unsupported multi-GPU requirement, or severe instability</td></tr>
+    <tr><td>Full training</td><td>Kaggle if smoke proves it is feasible</td><td>Measured VRAM exceeds available GPU memory or projected runtime is impractical</td></tr>
+    <tr><td>Team GPU request</td><td>Only after evidence is collected</td><td>Request includes peak VRAM, required headroom, expected runtime, and reason Kaggle is insufficient</td></tr>
+  </table>
+
+  <div class="note">
+    This keeps internal GPU usage evidence-based. The first objective is to make the training pipeline run on Kaggle;
+    team GPU capacity is treated as an escalation path rather than the default.
+  </div>
+
+  <h3>6.3 GPU VRAM sizing strategy</h3>
+  <p>
+    GPU VRAM is distinct from system RAM. System RAM holds dataset/preprocessing/runtime objects, while GPU VRAM is used for
+    model weights, activations, gradients, optimizer states, and temporary tensors. The initial ranges below are planning estimates,
+    not hard requirements.
+  </p>
+
+  <table>
+    <tr><th>Model</th><th>Method</th><th>Initial planning estimate</th><th>Initial platform plan</th></tr>
+    <tr><td><strong>GLM-OCR ~0.9B</strong></td><td>LoRA</td><td><strong>8–12 GB VRAM</strong></td><td>Kaggle first</td></tr>
+    <tr><td><strong>NaviDC ~1.2B</strong></td><td>LoRA</td><td><strong>12–20 GB VRAM</strong></td><td>Kaggle first; team 24GB+ if needed</td></tr>
+    <tr><td><strong>PaddleOCR-VL ~1B</strong></td><td>Full SFT</td><td><strong>24 GB+; 40 GB+ preferred</strong></td><td>Kaggle smoke first; team GPU likely for full SFT if OOM</td></tr>
+  </table>
+
+  <p>Peak VRAM depends on micro-batch size, image resolution, visual-token count, sequence length, BF16/FP32, gradient checkpointing, Flash Attention, frozen modules, optimizer choice, and framework implementation.</p>
+
+  <div class="flow">
+    <span>VRAM estimate</span><b>→</b>
+    <span>Kaggle smoke run</span><b>→</b>
+    <span>measure peak VRAM</span><b>→</b>
+    <span>measure throughput</span><b>→</b>
+    <span>Kaggle full run or team GPU request</span>
+  </div>
+
+  <h3>6.4 Configuration summary</h3>
+  <table>
+    <tr><th>Model</th><th>Method</th><th>LR</th><th>Epochs</th><th>Effective batch target</th><th>Compute plan</th></tr>
+    <tr><td><strong>GLM-OCR</strong></td><td>LoRA · LLaMA-Factory</td><td>1e-4</td><td>3</td><td>16</td><td>Kaggle first</td></tr>
+    <tr><td><strong>NaviDC</strong></td><td>LoRA · ms-swift / PEFT fallback</td><td>1e-4 proposed</td><td>3</td><td>16</td><td>Kaggle first; 24GB+ team GPU if required</td></tr>
+    <tr><td><strong>PaddleOCR-VL</strong></td><td>Full SFT · ERNIEKit</td><td>5e-6</td><td>2 → optional 3</td><td>Reference packing / accumulation setup</td><td>Kaggle smoke first; likely team GPU for full SFT if needed</td></tr>
+  </table>
+
+  <h3>6.5 Workload estimate</h3>
+  <table>
+    <tr><th>Run</th><th>Train samples</th><th>Epochs</th><th>Sample exposures</th></tr>
+    <tr><td>GLM full</td><td>5,818</td><td>3</td><td><strong>17,454</strong></td></tr>
+    <tr><td>NaviDC full</td><td>5,818</td><td>3</td><td><strong>17,454</strong></td></tr>
+    <tr><td>Paddle planned start</td><td>5,818</td><td>2</td><td><strong>11,636</strong></td></tr>
+    <tr><td>Paddle with optional epoch 3</td><td>5,818</td><td>3</td><td><strong>17,454</strong></td></tr>
+    <tr><td><strong>Total full experiment</strong></td><td>—</td><td>—</td><td><strong>46,544–52,362</strong></td></tr>
+  </table>
+
+  <h3>6.6 Smoke-run measurements</h3>
+  <p>Each smoke run should record at least:</p>
+  <ul>
+    <li>Peak GPU VRAM</li>
+    <li>Samples/sec and steps/sec</li>
+    <li>Wall-clock time</li>
+    <li>Training/validation loss</li>
+    <li>Whether save → reload → inference works</li>
+    <li>Any OOM, compatibility, or data-processing issue</li>
+  </ul>
+
+  <h3>6.7 Evaluation</h3>
+  <table>
+    <tr><th>Metric</th><th>Priority</th><th>Meaning</th></tr>
+    <tr><td><strong>Strict CER</strong></td><td><span class="status good">PRIMARY</span></td><td>Character-level OCR error; Unicode NFC only</td></tr>
+    <tr><td>WER</td><td>Secondary</td><td>Word-level error</td></tr>
+    <tr><td>Exact-Line Accuracy</td><td>Secondary</td><td>Percentage of exact full-line matches</td></tr>
+    <tr><td>Diacritic Error</td><td>Diagnostic</td><td>Vietnamese diacritic failure analysis</td></tr>
+    <tr><td>Peak VRAM / training time</td><td>Operational</td><td>Compute planning and reproducibility</td></tr>
+  </table>
+
+  <h3>6.8 Decision rules</h3>
+  <ul>
+    <li>Do not use the test set for epoch selection or hyperparameter tuning.</li>
+    <li>Best checkpoint = lowest validation CER.</li>
+    <li>If validation CER worsens while training loss keeps decreasing, treat this as an overfitting signal.</li>
+    <li>If save → reload → inference fails, do not launch the full run.</li>
+    <li>Request a team GPU only after Kaggle smoke evidence demonstrates a concrete need.</li>
+  </ul>
+</section>
+
+<section id="updates">
+  <div class="section-head"><div class="num">07</div><div><h2>Progress updates</h2><div class="muted">Experiment log for direct team-lead reporting.</div></div></div>
+
+  <div class="legend">
+    <span class="status good">DONE</span>
+    <span class="status plan">IN PROGRESS / NEXT</span>
+    <span class="status warn">ISSUE / NEED CONFIRMATION</span>
+    <span class="status todo">NOT STARTED</span>
+  </div>
+
+  <div class="timeline">
+    <div class="update">
+      <div class="update-date">2026-09-14 · Plan v5</div>
+      <h3>Experiment plan consolidated</h3>
+      <p>
+        Finalized the three-model shortlist, full UIT-HWDB inventory, line-subset selection, initial training stacks,
+        VRAM sizing strategy, Paddle epoch policy, and Kaggle-first compute escalation strategy.
+      </p>
+      <table>
+        <tr><th>Status</th><th>Evidence / Result</th><th>Next step</th></tr>
+        <tr><td><span class="status good">DONE</span></td><td>Shortlist: GLM-OCR / NaviDC-OCR / PaddleOCR-VL-1.6</td><td>Download and inspect the dataset package</td></tr>
+        <tr><td><span class="status good">DONE</span></td><td>Dataset inventory: 110,745 word / 7,273 line / 1,144 paragraph</td><td>Verify structure, labels, and grouping metadata</td></tr>
+        <tr><td><span class="status good">DONE</span></td><td>Kaggle-first policy + measured GPU escalation rule defined</td><td>Run smoke tests and record peak VRAM</td></tr>
+        <tr><td><span class="status plan">NEXT</span></td><td>Primary training subset = UIT-HWDB-line</td><td>Freeze split and build master manifest</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>Current checklist</h3>
+  <table>
+    <tr><th>Step</th><th>Status</th><th>Expected output</th></tr>
+    <tr><td>Download UIT-HWDB packages</td><td><span class="status todo">NOT STARTED</span></td><td>Raw dataset folders</td></tr>
+    <tr><td>Inspect structure / labels / grouping</td><td><span class="status todo">NOT STARTED</span></td><td>dataset_report.json</td></tr>
+    <tr><td>Freeze train / validation / test split</td><td><span class="status todo">NOT STARTED</span></td><td>train.jsonl / val.jsonl / test.jsonl</td></tr>
+    <tr><td>Zero-shot baseline ×3</td><td><span class="status todo">NOT STARTED</span></td><td>Base predictions + CER/WER</td></tr>
+    <tr><td>GLM Kaggle smoke training</td><td><span class="status todo">NOT STARTED</span></td><td>Adapter + metrics + peak VRAM</td></tr>
+    <tr><td>NaviDC Kaggle smoke training</td><td><span class="status todo">NOT STARTED</span></td><td>Compatibility + adapter + peak VRAM</td></tr>
+    <tr><td>Paddle Kaggle smoke attempt</td><td><span class="status todo">NOT STARTED</span></td><td>Compatibility / VRAM evidence</td></tr>
+    <tr><td>Request team GPU if required</td><td><span class="status todo">CONDITIONAL</span></td><td>Measured resource request with justification</td></tr>
+    <tr><td>Full training runs</td><td><span class="status todo">NOT STARTED</span></td><td>Best checkpoints</td></tr>
+    <tr><td>Final comparison</td><td><span class="status todo">NOT STARTED</span></td><td>Final metrics table + recommendation</td></tr>
+  </table>
+
+  <div class="template">
+    <strong>Template for future updates</strong>
+    <table>
+      <tr><th>Date</th><th>Task</th><th>Status</th><th>Evidence / Result</th><th>Issue</th><th>Next step</th></tr>
+      <tr><td>YYYY-MM-DD</td><td>Example: GLM Kaggle smoke training</td><td>DONE / ISSUE</td><td>loss, CER, peak VRAM, throughput, checkpoint path</td><td>OOM / framework / data / none</td><td>Kaggle full run / request team GPU / config fix</td></tr>
+    </table>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vlm-handwriting"
+version = "0.1.0"
+description = "Vietnamese handwritten line OCR experiment utilities"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+data = ["kagglehub>=1.0.2"]
+dev = ["pytest>=8.0", "ruff>=0.8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["notebooks/legacy_colab", "docs/archive"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

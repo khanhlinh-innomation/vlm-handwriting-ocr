@@ -1,0 +1,13 @@
+model:
+  id: PaddlePaddle/PaddleOCR-VL-1.6
+  name: PaddleOCR-VL-1.6
+  prompt_label: ocr
+
+generation:
+  max_new_tokens: 256
+
+evaluation:
+  smoke_size: 20
+  smoke_seed: 42
+  full_validation: false
+  test: false

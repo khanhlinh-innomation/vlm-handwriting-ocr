@@ -1,0 +1,15 @@
+model:
+  id: zai-org/GLM-OCR
+  name: GLM-OCR
+  prompt: "Text Recognition:"
+
+generation:
+  do_sample: false
+  max_new_tokens: 256
+  repetition_penalty: 1.1
+
+evaluation:
+  smoke_size: 20
+  smoke_seed: 42
+  full_validation: false
+  test: false

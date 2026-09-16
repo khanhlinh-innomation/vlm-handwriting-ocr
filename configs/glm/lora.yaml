@@ -1,0 +1,18 @@
+model:
+  id: zai-org/GLM-OCR
+  template: glm_ocr
+
+training:
+  framework: llama_factory
+  stage: sft
+  method: lora
+  lora_rank: 8
+  lora_target: all
+  learning_rate: 0.0001
+  epochs: 3
+  scheduler: cosine
+  warmup_ratio: 0.1
+  precision: bf16
+  effective_batch_size: 16
+  checkpoint_metric: validation_cer
+  checkpoint_mode: min

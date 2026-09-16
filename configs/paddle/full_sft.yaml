@@ -1,0 +1,12 @@
+model:
+  id: PaddlePaddle/PaddleOCR-VL-1.6
+
+training:
+  framework: erniekit
+  method: full_sft
+  learning_rate: 0.000005
+  initial_epochs: 2
+  optional_epoch_3: validation_cer_must_improve
+  precision: bf16
+  checkpoint_metric: validation_cer
+  checkpoint_mode: min

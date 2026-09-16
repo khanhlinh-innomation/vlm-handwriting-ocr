@@ -1,0 +1,28 @@
+raw_dataset_handle: ntklinhfitus/uit-hwdb
+manifest_dataset_handle: ntklinhfitus/uit-hwdb-manifest
+
+paths:
+  data_root_env: VLM_DATA_ROOT
+  raw_root_env: VLM_RAW_ROOT
+  manifest_root_env: VLM_MANIFEST_ROOT
+
+frozen_split:
+  seed: 42
+  train_samples: 6346
+  train_writers: 224
+  validation_samples: 682
+  validation_writers: 25
+  test_samples: 201
+  test_writers: 6
+
+smoke:
+  split: validation
+  size: 20
+  seed: 42
+
+evaluation:
+  unicode_normalization: NFC
+  lowercase: false
+  strip_punctuation: false
+  remove_diacritics: false
+  collapse_whitespace: false
