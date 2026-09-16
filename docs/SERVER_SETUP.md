@@ -27,11 +27,32 @@ GPU telemetry remained at 100 percent with zero allocated VRAM and no process re
 ## Bootstrap
 
 ```bash
-mkdir -p /workspace/data/{uit-hwdb,uit-hwdb-manifest}
-mkdir -p /workspace/{checkpoints,outputs,logs}
-cd /workspace/vlm-handwriting-ocr
-uv pip install -e ".[data,dev]"
-python scripts/verify_environment.py --output environment.json
+mkdir -p /workspace/vlm-handwriting/{data,checkpoints,outputs,logs,cache}
+cd /workspace/vlm-handwriting/repo
+uv pip install --python /venv/main/bin/python -e ".[data,dev]"
+/venv/main/bin/python scripts/verify_environment.py \
+  --output /workspace/vlm-handwriting/logs/environment.json
 ```
 
-Introduce model-specific dependencies one model at a time, beginning with GLM-OCR.
+## GLM-OCR base gate
+
+Install model-specific dependencies and verify that Torch stays on the confirmed CUDA build:
+
+```bash
+uv pip install --python /venv/main/bin/python -r requirements/glm.txt
+/venv/main/bin/python -c 'import torch, transformers; print(torch.__version__, torch.version.cuda, transformers.__version__)'
+export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
+```
+
+Run the first fixed validation image:
+
+```bash
+/venv/main/bin/python scripts/benchmark_glm.py \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --mode one \
+  2>&1 | tee /workspace/vlm-handwriting/logs/glm-base-one.log
+```
+
+Review the one-image artifact before running `--mode smoke`. Only use `--mode validation --allow-full-validation` after smoke20 review. Only use `--mode test --allow-test` after the inference configuration is frozen.

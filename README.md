@@ -23,9 +23,9 @@ Do not regenerate the split or tune against the test set.
 ## Repository status
 
 - Current documentation and nine statically reviewed Colab notebooks are imported.
-- Shared data-contract, metric, smoke-selection, artifact, and environment utilities are scaffolded and tested.
-- The legacy notebooks have not been executed end to end on the Vast server.
-- Server-native model entry points are the next phase, starting with GLM-OCR.
+- The frozen data contract has been verified against all 7,229 images on the Vast server.
+- Shared data, metric, smoke-selection, artifact, and environment utilities are tested.
+- A gated server-native GLM-OCR base benchmark is ready for `one -> smoke20 -> validation -> test`.
 
 See [the canonical project context](docs/PROJECT_CONTEXT.md), [experiment protocol](docs/EXPERIMENT_PROTOCOL.md), and [server setup](docs/SERVER_SETUP.md).
 
@@ -41,7 +41,7 @@ src/vlm_handwriting/     reusable experiment code
 tests/                   CPU-only contract tests
 ```
 
-Mutable data belongs outside the repository under `/workspace/data`, `/workspace/checkpoints`, `/workspace/outputs`, and `/workspace/logs`.
+Mutable data belongs outside the repository under `/workspace/vlm-handwriting/{data,checkpoints,outputs,logs,cache}`.
 
 ## Local development
 
@@ -55,17 +55,43 @@ python -m pytest
 The confirmed server environment is Python 3.12 with `torch 2.10.0+cu128`, RTX 5090 `sm_120`, and working BF16 CUDA. Preserve that Torch build.
 
 ```bash
-cd /workspace/vlm-handwriting-ocr
-uv pip install -e ".[data,dev]"
-python scripts/verify_environment.py --output environment.json
-python scripts/download_data.py --data-root /workspace/data
-python scripts/verify_manifest.py \
+cd /workspace/vlm-handwriting/repo
+uv pip install --python /venv/main/bin/python -e ".[data,dev]"
+/venv/main/bin/python scripts/verify_environment.py \
+  --output /workspace/vlm-handwriting/logs/environment.json
+/venv/main/bin/python scripts/download_data.py \
+  --data-root /workspace/vlm-handwriting/data
+/venv/main/bin/python scripts/verify_manifest.py \
   --manifest-root <manifest_root printed by download_data.py> \
   --raw-root <raw_root printed by download_data.py> \
   --check-images
 ```
 
 KaggleHub may return nested download paths. The verifier discovers the directory containing the three split CSVs.
+
+## GLM-OCR base benchmark
+
+Install the official-compatible GLM dependency range without replacing the verified Torch pair, then confirm Torch is unchanged:
+
+```bash
+cd /workspace/vlm-handwriting/repo
+uv pip install --python /venv/main/bin/python -r requirements/glm.txt
+/venv/main/bin/python -c 'import torch, transformers; print(torch.__version__, torch.version.cuda, transformers.__version__)'
+export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
+```
+
+Run exactly one fixed validation sample first:
+
+```bash
+/venv/main/bin/python scripts/benchmark_glm.py \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --mode one \
+  2>&1 | tee /workspace/vlm-handwriting/logs/glm-base-one.log
+```
+
+Inspect the ground truth and prediction artifact before changing `--mode one` to `--mode smoke`. Full validation additionally requires `--allow-full-validation`; the frozen test additionally requires `--allow-test`.
 
 ## Licensing
 

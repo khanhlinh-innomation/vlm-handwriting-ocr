@@ -4,5 +4,6 @@ The Vast server has a verified `torch 2.10.0+cu128` and `torchvision 0.25.0+cu12
 
 - `constraints-cu128.txt` documents the working Torch pair.
 - `shared.txt` contains model-independent tools.
-- Model dependency files will be frozen only after official installation paths pass server smoke tests.
+- `glm.txt` follows the official GLM-OCR package floors while constraining the verified Torch pair.
+- Freeze the exact resolved GLM package versions after the first successful server smoke test.
 - Paddle dependencies are deferred while establishing the GLM baseline.
