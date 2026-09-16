@@ -34,7 +34,11 @@ def main() -> None:
     manifest_path = Path(kagglehub.dataset_download(MANIFEST_HANDLE))
     manifest_root = find_manifest_root(manifest_path)
     first_train_row = load_manifest(manifest_root / "train.csv")[0]
-    raw_root = find_raw_root(raw_path, first_train_row["relative_path"])
+    raw_root = find_raw_root(
+        raw_path,
+        first_train_row["relative_path"],
+        required_path_component="UIT_HWDB_line",
+    )
     print(
         json.dumps(
             {

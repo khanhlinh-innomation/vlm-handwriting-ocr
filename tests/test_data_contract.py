@@ -64,3 +64,21 @@ def test_nested_raw_root_is_discovered(tmp_path: Path) -> None:
     image.parent.mkdir(parents=True)
     image.touch()
     assert find_raw_root(tmp_path, "train_data/1/1.jpg") == raw_root
+
+
+def test_line_root_is_selected_when_subsets_reuse_paths(tmp_path: Path) -> None:
+    line_root = tmp_path / "UIT_HWDB_line" / "UIT_HWDB_line"
+    word_root = tmp_path / "UIT_HWDB_word" / "UIT_HWDB_word"
+    for root in (line_root, word_root):
+        image = root / "train_data" / "1" / "1.jpg"
+        image.parent.mkdir(parents=True)
+        image.touch()
+
+    assert (
+        find_raw_root(
+            tmp_path,
+            "train_data/1/1.jpg",
+            required_path_component="UIT_HWDB_line",
+        )
+        == line_root
+    )

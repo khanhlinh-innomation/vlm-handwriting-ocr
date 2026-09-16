@@ -47,8 +47,17 @@ def load_manifest(path: Path) -> list[dict[str, str]]:
         return list(reader)
 
 
-def find_raw_root(base: Path, relative_path: str) -> Path:
-    """Find the raw directory for one known manifest-relative image path."""
+def find_raw_root(
+    base: Path,
+    relative_path: str,
+    *,
+    required_path_component: str | None = None,
+) -> Path:
+    """Find the raw directory for one known manifest-relative image path.
+
+    ``required_path_component`` disambiguates datasets whose subsets reuse the
+    same internal paths, such as UIT-HWDB line, word, and paragraph folders.
+    """
     base = Path(base).expanduser().resolve()
     if base.is_file():
         base = base.parent
@@ -56,7 +65,10 @@ def find_raw_root(base: Path, relative_path: str) -> Path:
     if portable.is_absolute() or ".." in portable.parts:
         raise ManifestValidationError(f"Unsafe relative image path: {relative_path}")
 
-    if base.joinpath(*portable.parts).is_file():
+    def is_allowed(candidate: Path) -> bool:
+        return required_path_component is None or required_path_component in candidate.parts
+
+    if base.joinpath(*portable.parts).is_file() and is_allowed(base):
         return base
 
     candidates: set[Path] = set()
@@ -65,7 +77,7 @@ def find_raw_root(base: Path, relative_path: str) -> Path:
             candidate = image_path
             for _ in portable.parts:
                 candidate = candidate.parent
-            if candidate.joinpath(*portable.parts).is_file():
+            if candidate.joinpath(*portable.parts).is_file() and is_allowed(candidate):
                 candidates.add(candidate)
     if len(candidates) == 1:
         return candidates.pop()
