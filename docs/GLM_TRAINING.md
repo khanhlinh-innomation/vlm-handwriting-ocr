@@ -125,3 +125,20 @@ set -o pipefail
 
 The runner saves per-sample predictions and metrics for every checkpoint plus a ranking CSV
 and JSON ordered by corpus CER. Freeze the top-ranked checkpoint before opening test.
+
+## 6. Run the frozen test once
+
+After validation ranking freezes one checkpoint, pass only that adapter and explicitly open
+the test gate. Test mode rejects multiple adapters so it cannot be used for checkpoint selection.
+
+```bash
+/workspace/vlm-handwriting/venvs/glm-train/bin/python \
+  scripts/benchmark_glm_adapter.py \
+  --adapter-path /workspace/vlm-handwriting/checkpoints/glm_ocr/lora_full/checkpoint-1191 \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --split test \
+  --allow-test \
+  2>&1 | tee /workspace/vlm-handwriting/logs/glm-lora-test.log
+```

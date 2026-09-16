@@ -16,6 +16,7 @@ import yaml
 from vlm_handwriting.artifacts import write_csv, write_json
 from vlm_handwriting.benchmark import (
     FULL_EVALUATION_SPLITS,
+    enforce_frozen_test_single_adapter,
     evaluation_manifest_name,
     latency_summary,
     prediction_metrics,
@@ -182,6 +183,7 @@ def main() -> None:
             raise FileNotFoundError(image_path)
 
     adapters = [validate_adapter_path(path) for path in args.adapter_path]
+    enforce_frozen_test_single_adapter(split_name, len(adapters))
     adapter_names = [path.name for path in adapters]
     if len(set(adapter_names)) != len(adapter_names):
         raise ValueError(f"Adapter directory names must be unique: {adapter_names}")
@@ -224,7 +226,7 @@ def main() -> None:
         ]
         write_csv(run_dir / "checkpoint_ranking.csv", summary_csv, SUMMARY_FIELDS)
 
-    print("Checkpoint ranking by validation CER:")
+    print(f"Checkpoint ranking by {split_name} CER:")
     for rank, metrics in enumerate(
         sorted(completed, key=lambda item: float(item["cer"])), start=1
     ):

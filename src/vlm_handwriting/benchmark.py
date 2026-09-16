@@ -27,6 +27,16 @@ def evaluation_manifest_name(split: str, *, allow_test: bool = False) -> tuple[s
     raise ValueError(f"Unknown evaluation split: {split!r}")
 
 
+def enforce_frozen_test_single_adapter(split: str, adapter_count: int) -> None:
+    """Prevent checkpoint comparison or selection on the frozen test set."""
+    if adapter_count < 1:
+        raise ValueError("At least one adapter is required")
+    if split == "test" and adapter_count != 1:
+        raise PermissionError(
+            "Frozen test evaluation accepts exactly one validation-selected adapter."
+        )
+
+
 def select_benchmark_rows(
     validation_rows: list[dict[str, str]],
     test_rows: list[dict[str, str]],

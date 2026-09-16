@@ -1,6 +1,7 @@
 import pytest
 
 from vlm_handwriting.benchmark import (
+    enforce_frozen_test_single_adapter,
     evaluation_manifest_name,
     latency_summary,
     select_benchmark_rows,
@@ -47,3 +48,12 @@ def test_full_validation_does_not_require_test_access() -> None:
     with pytest.raises(PermissionError, match="test set"):
         evaluation_manifest_name("test")
     assert evaluation_manifest_name("test", allow_test=True) == ("test.csv", "test")
+
+
+def test_frozen_test_accepts_exactly_one_selected_adapter() -> None:
+    enforce_frozen_test_single_adapter("validation", 3)
+    enforce_frozen_test_single_adapter("test", 1)
+    with pytest.raises(PermissionError, match="exactly one"):
+        enforce_frozen_test_single_adapter("test", 2)
+    with pytest.raises(ValueError, match="At least one"):
+        enforce_frozen_test_single_adapter("validation", 0)
