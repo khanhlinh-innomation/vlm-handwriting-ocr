@@ -22,10 +22,12 @@ Do not regenerate the split or tune against the test set.
 
 ## Repository status
 
-- Current documentation and nine statically reviewed Colab notebooks are imported.
 - The frozen data contract has been verified against all 7,229 images on the Vast server.
-- Shared data, metric, smoke-selection, artifact, and environment utilities are tested.
-- A gated server-native GLM-OCR base benchmark is ready for `one -> smoke20 -> frozen test`.
+- The GLM-OCR pipeline is complete: frozen base test, LoRA smoke, three-epoch full train,
+  validation-CER checkpoint selection, and one frozen fine-tuned test.
+- `checkpoint-1191` reduced test CER from 31.95% to 12.46% and WER from 77.41% to 29.01%.
+- The final GLM result and accuracy/latency tradeoffs are documented in
+  [GLM results](docs/GLM_RESULTS.md).
 
 See [the canonical project context](docs/PROJECT_CONTEXT.md), [experiment protocol](docs/EXPERIMENT_PROTOCOL.md), and [server setup](docs/SERVER_SETUP.md).
 The gated GLM LoRA workflow is documented in [GLM training](docs/GLM_TRAINING.md).

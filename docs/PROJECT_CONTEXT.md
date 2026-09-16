@@ -1239,20 +1239,25 @@ Completed:
 ✓ 3-model shortlist defined
 ✓ 9-notebook experiment design defined
 ✓ remote Vast.ai access provisioned
+✓ RTX 5090 / Torch 2.10.0+cu128 environment verified
+✓ all 7,229 frozen manifest image paths verified
+✓ GLM-OCR frozen base test completed
+✓ isolated LLaMA-Factory 0.9.5 LoRA environment verified
+✓ GLM-OCR LoRA smoke save/reload/inference gate passed
+✓ GLM-OCR full training completed: 3 epochs / 1,191 steps
+✓ checkpoint-1191 selected by full-validation CER
+✓ checkpoint-1191 evaluated once on the frozen test
+✓ GLM-OCR test CER improved from 31.95% to 12.46%
+✓ GLM-OCR test WER improved from 77.41% to 29.01%
 ```
 
 Next:
 
 ```text
-→ inspect Vast GPU/server
-→ clone/init repository
-→ download 2 Kaggle datasets
-→ refactor common utilities
-→ run GLM-OCR base smoke benchmark
-→ run GLM full base validation
-→ freeze GLM base inference config
-→ run GLM test baseline
-→ proceed to GLM fine-tuning
+→ keep the frozen GLM test sealed from further tuning
+→ use checkpoint-1191 as the recommended GLM round-1 artifact
+→ decide whether to begin the deferred TeleOCR pipeline
+→ apply the same split, normalization, checkpoint-selection, and test-gate rules to future models
 ```
 
 ---
