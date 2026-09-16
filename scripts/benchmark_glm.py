@@ -47,7 +47,7 @@ PREDICTION_FIELDS = [
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Gated GLM-OCR benchmark: one -> smoke -> validation -> test"
+        description="Gated GLM-OCR base benchmark: one -> smoke -> frozen test"
     )
     parser.add_argument("--manifest-root", type=Path, required=True)
     parser.add_argument("--raw-root", type=Path, required=True)
@@ -55,7 +55,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, default=Path("configs/glm/base.yaml"))
     parser.add_argument("--mode", choices=BENCHMARK_MODES, default="one")
     parser.add_argument("--run-id", help="Output directory name; defaults to an UTC timestamp")
-    parser.add_argument("--allow-full-validation", action="store_true")
     parser.add_argument("--allow-test", action="store_true")
     return parser.parse_args()
 
@@ -155,7 +154,6 @@ def main() -> None:
         args.mode,
         smoke_size=int(evaluation["smoke_size"]),
         smoke_seed=int(evaluation["smoke_seed"]),
-        allow_full_validation=args.allow_full_validation,
         allow_test=args.allow_test,
     )
 

@@ -11,5 +11,4 @@ generation:
 evaluation:
   smoke_size: 20
   smoke_seed: 42
-  full_validation: false
   test: false

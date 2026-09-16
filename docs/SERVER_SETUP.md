@@ -55,4 +55,6 @@ Run the first fixed validation image:
   2>&1 | tee /workspace/vlm-handwriting/logs/glm-base-one.log
 ```
 
-Review the one-image artifact before running `--mode smoke`. Only use `--mode validation --allow-full-validation` after smoke20 review. Only use `--mode test --allow-test` after the inference configuration is frozen.
+Review the one-image artifact before running `--mode smoke`. After smoke20 review, freeze the prompt and decoding configuration. Run the base test once with `--mode test --allow-test`; full validation is reserved for fine-tuning checkpoint selection.
+
+The legacy Colab notebooks are references, not the server execution path. Use the Python scripts for reproducible benchmarks and training. Keep long commands in `tmux`; the laptop may disconnect after detaching, provided the Vast instance remains running.

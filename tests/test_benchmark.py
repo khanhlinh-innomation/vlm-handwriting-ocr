@@ -20,19 +20,13 @@ def test_one_and_smoke_use_the_same_frozen_selection() -> None:
     assert smoke_tag == "smoke20"
 
 
-def test_expensive_and_test_modes_are_explicitly_gated() -> None:
+def test_test_mode_is_explicitly_gated() -> None:
     validation = _rows(682)
     test = _rows(201)
-    with pytest.raises(PermissionError, match="Full validation"):
-        select_benchmark_rows(validation, test, "validation")
     with pytest.raises(PermissionError, match="test set"):
         select_benchmark_rows(validation, test, "test")
 
-    selected_validation, _, _ = select_benchmark_rows(
-        validation, test, "validation", allow_full_validation=True
-    )
-    selected_test, _, _ = select_benchmark_rows(test, test, "test", allow_test=True)
-    assert selected_validation == validation
+    selected_test, _, _ = select_benchmark_rows(validation, test, "test", allow_test=True)
     assert selected_test == test
 
 

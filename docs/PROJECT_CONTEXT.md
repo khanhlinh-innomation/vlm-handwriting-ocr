@@ -390,10 +390,13 @@ TEST
 ```
 
 For base models:
-- use validation smoke first,
-- then full validation,
-- freeze inference configuration,
-- then run the test baseline once.
+- run one validation image,
+- run the fixed validation smoke20,
+- freeze the inference configuration,
+- then run the frozen test baseline once.
+
+Full validation is not required for an unchanged base model. It is required during
+fine-tuning to compare configurations and select the best checkpoint.
 
 Do not tune prompts/decoding using test results.
 
@@ -426,7 +429,8 @@ check:
 - record peak GPU VRAM
 ```
 
-Only after this passes should a full validation benchmark run.
+Only after this passes should the prompt and decoding configuration be frozen. The
+base test baseline may then run once. Do not tune from its result.
 
 ---
 
@@ -863,9 +867,6 @@ For each model:
 *_base_smoke20_predictions.csv
 *_base_smoke20_metrics.json
 
-*_base_val_predictions.csv
-*_base_val_metrics.json
-
 *_base_test_predictions.csv
 *_base_test_metrics.json
 
@@ -1096,7 +1097,6 @@ Order:
 1 sample inference
 → 20 validation smoke
 → inspect output
-→ full 682 validation
 → freeze inference config
 → one-time 201 test baseline
 ```

@@ -17,9 +17,13 @@ Do not lowercase, strip punctuation, collapse meaningful spaces, remove diacriti
 For every base model:
 
 ```text
-one sample -> fixed validation smoke20 -> full validation
--> freeze inference configuration -> one test baseline
+one validation sample -> fixed validation smoke20
+-> freeze inference configuration -> one frozen test baseline
 ```
+
+The one-sample and smoke20 runs are debugging gates, not final baseline scores. A full
+validation benchmark is not required for an unchanged base model. Validation becomes
+mandatory during fine-tuning for checkpoint and configuration selection.
 
 For every fine-tuning method:
 

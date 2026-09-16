@@ -25,7 +25,7 @@ Do not regenerate the split or tune against the test set.
 - Current documentation and nine statically reviewed Colab notebooks are imported.
 - The frozen data contract has been verified against all 7,229 images on the Vast server.
 - Shared data, metric, smoke-selection, artifact, and environment utilities are tested.
-- A gated server-native GLM-OCR base benchmark is ready for `one -> smoke20 -> validation -> test`.
+- A gated server-native GLM-OCR base benchmark is ready for `one -> smoke20 -> frozen test`.
 
 See [the canonical project context](docs/PROJECT_CONTEXT.md), [experiment protocol](docs/EXPERIMENT_PROTOCOL.md), and [server setup](docs/SERVER_SETUP.md).
 
@@ -91,7 +91,11 @@ Run exactly one fixed validation sample first:
   2>&1 | tee /workspace/vlm-handwriting/logs/glm-base-one.log
 ```
 
-Inspect the ground truth and prediction artifact before changing `--mode one` to `--mode smoke`. Full validation additionally requires `--allow-full-validation`; the frozen test additionally requires `--allow-test`.
+Inspect the ground truth and prediction artifact before changing `--mode one` to `--mode smoke`. After smoke review, freeze the prompt and decoding configuration, then run the test baseline once with `--mode test --allow-test`.
+
+The files under `notebooks/legacy_colab/` are historical Colab references. The reproducible Vast execution path uses `scripts/` and shared code under `src/`; a notebook is optional for visual inspection and is not required for benchmark or training jobs.
+
+Run long jobs inside `tmux`. The laptop and SSH connection may disconnect after detaching, but the Vast instance itself must remain running.
 
 ## Licensing
 

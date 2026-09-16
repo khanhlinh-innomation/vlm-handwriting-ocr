@@ -9,7 +9,7 @@ from typing import Any
 
 from vlm_handwriting.smoke import select_smoke_rows
 
-BENCHMARK_MODES = ("one", "smoke", "validation", "test")
+BENCHMARK_MODES = ("one", "smoke", "test")
 
 
 def select_benchmark_rows(
@@ -19,10 +19,9 @@ def select_benchmark_rows(
     *,
     smoke_size: int = 20,
     smoke_seed: int = 42,
-    allow_full_validation: bool = False,
     allow_test: bool = False,
 ) -> tuple[list[dict[str, str]], str, str]:
-    """Select rows while enforcing the experiment's validation/test gates."""
+    """Select fixed validation smoke rows while enforcing the frozen-test gate."""
     if mode not in BENCHMARK_MODES:
         raise ValueError(f"Unknown benchmark mode: {mode!r}")
 
@@ -31,12 +30,6 @@ def select_benchmark_rows(
         return smoke_rows[:1], "validation_one", "one"
     if mode == "smoke":
         return smoke_rows, f"validation_smoke{smoke_size}", f"smoke{smoke_size}"
-    if mode == "validation":
-        if not allow_full_validation:
-            raise PermissionError(
-                "Full validation is gated. Re-run with --allow-full-validation after smoke review."
-            )
-        return validation_rows, "validation", "val"
     if not allow_test:
         raise PermissionError(
             "The frozen test set is gated. Freeze the inference configuration, then re-run "
