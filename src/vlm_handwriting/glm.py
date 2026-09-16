@@ -12,6 +12,16 @@ import numpy as np
 from vlm_handwriting.metrics import normalize_for_evaluation
 
 
+def validate_adapter_path(adapter_path: Path) -> Path:
+    """Resolve an adapter directory and require its PEFT config and weights."""
+    resolved = Path(adapter_path).expanduser().resolve()
+    if not (resolved / "adapter_config.json").is_file():
+        raise FileNotFoundError(f"Missing adapter_config.json under {resolved}")
+    if not any(resolved.glob("adapter_model.*")):
+        raise FileNotFoundError(f"Missing adapter weights under {resolved}")
+    return resolved
+
+
 def load_glm_base(config: dict[str, Any]) -> tuple[Any, Any, Any, Any, Any]:
     """Load the configured base model using BF16 where supported."""
     import torch
@@ -36,6 +46,18 @@ def load_glm_base(config: dict[str, Any]) -> tuple[Any, Any, Any, Any, Any]:
         device_map="auto",
     ).eval()
     device = next(model.parameters()).device
+    return torch, processor, model, device, dtype
+
+
+def load_glm_adapter(
+    config: dict[str, Any], adapter_path: Path
+) -> tuple[Any, Any, Any, Any, Any]:
+    """Load the configured base model and attach a saved PEFT adapter."""
+    adapter_path = validate_adapter_path(adapter_path)
+    torch, processor, base_model, device, dtype = load_glm_base(config)
+    from peft import PeftModel
+
+    model = PeftModel.from_pretrained(base_model, adapter_path, is_trainable=False).eval()
     return torch, processor, model, device, dtype
 
 

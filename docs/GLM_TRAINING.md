@@ -100,3 +100,28 @@ must pass reload inference:
 `configs/glm/lora.yaml` is the three-epoch full configuration. It remains gated until the
 smoke run saves an adapter and the separate reload process completes inference. Epoch
 checkpoints are later ranked by full-validation CER, not training or validation loss alone.
+
+## 5. Rank epoch checkpoints on full validation
+
+After the three-epoch run finishes, pass all epoch checkpoints to one benchmark command.
+This command reads only `val.csv` unless the separate frozen-test gate is explicitly opened.
+
+```bash
+export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
+set -o pipefail
+
+/workspace/vlm-handwriting/venvs/glm-train/bin/python \
+  scripts/benchmark_glm_adapter.py \
+  --adapter-path \
+    /workspace/vlm-handwriting/checkpoints/glm_ocr/lora_full/checkpoint-397 \
+    /workspace/vlm-handwriting/checkpoints/glm_ocr/lora_full/checkpoint-794 \
+    /workspace/vlm-handwriting/checkpoints/glm_ocr/lora_full/checkpoint-1191 \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --split validation \
+  2>&1 | tee /workspace/vlm-handwriting/logs/glm-lora-validation.log
+```
+
+The runner saves per-sample predictions and metrics for every checkpoint plus a ranking CSV
+and JSON ordered by corpus CER. Freeze the top-ranked checkpoint before opening test.

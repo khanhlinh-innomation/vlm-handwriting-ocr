@@ -10,6 +10,21 @@ from typing import Any
 from vlm_handwriting.smoke import select_smoke_rows
 
 BENCHMARK_MODES = ("one", "smoke", "test")
+FULL_EVALUATION_SPLITS = ("validation", "test")
+
+
+def evaluation_manifest_name(split: str, *, allow_test: bool = False) -> tuple[str, str]:
+    """Resolve a full-evaluation split while keeping test access explicitly gated."""
+    if split == "validation":
+        return "val.csv", "validation"
+    if split == "test":
+        if not allow_test:
+            raise PermissionError(
+                "The frozen test set is gated. Select and freeze one checkpoint on validation, "
+                "then re-run with --allow-test."
+            )
+        return "test.csv", "test"
+    raise ValueError(f"Unknown evaluation split: {split!r}")
 
 
 def select_benchmark_rows(

@@ -1,6 +1,10 @@
 import pytest
 
-from vlm_handwriting.benchmark import latency_summary, select_benchmark_rows
+from vlm_handwriting.benchmark import (
+    evaluation_manifest_name,
+    latency_summary,
+    select_benchmark_rows,
+)
 
 
 def _rows(count: int) -> list[dict[str, str]]:
@@ -36,3 +40,10 @@ def test_latency_summary_uses_nearest_rank_p90() -> None:
         "latency_p50_sec": 3.0,
         "latency_p90_sec": 5.0,
     }
+
+
+def test_full_validation_does_not_require_test_access() -> None:
+    assert evaluation_manifest_name("validation") == ("val.csv", "validation")
+    with pytest.raises(PermissionError, match="test set"):
+        evaluation_manifest_name("test")
+    assert evaluation_manifest_name("test", allow_test=True) == ("test.csv", "test")

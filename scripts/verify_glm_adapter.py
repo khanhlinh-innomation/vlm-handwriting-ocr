@@ -13,7 +13,7 @@ import yaml
 from vlm_handwriting.artifacts import write_csv, write_json
 from vlm_handwriting.data import find_manifest_root, load_manifest, resolve_image_path
 from vlm_handwriting.environment import collect_environment
-from vlm_handwriting.glm import load_glm_base, predict_one
+from vlm_handwriting.glm import load_glm_adapter, predict_one, validate_adapter_path
 from vlm_handwriting.metrics import (
     character_error_rate,
     normalize_for_evaluation,
@@ -42,11 +42,7 @@ def load_config(path: Path) -> dict[str, Any]:
 
 def main() -> None:
     args = parse_args()
-    adapter_path = args.adapter_path.expanduser().resolve()
-    if not (adapter_path / "adapter_config.json").is_file():
-        raise FileNotFoundError(f"Missing adapter_config.json under {adapter_path}")
-    if not any(adapter_path.glob("adapter_model.*")):
-        raise FileNotFoundError(f"Missing adapter weights under {adapter_path}")
+    adapter_path = validate_adapter_path(args.adapter_path)
 
     config = load_config(args.config)
     manifest_root = find_manifest_root(args.manifest_root)
@@ -54,10 +50,7 @@ def main() -> None:
     row = select_smoke_rows(validation_rows, size=20, seed=42)[0]
     image_path = resolve_image_path(args.raw_root, row["relative_path"])
 
-    torch, processor, base_model, device, dtype = load_glm_base(config)
-    from peft import PeftModel
-
-    model = PeftModel.from_pretrained(base_model, adapter_path, is_trainable=False).eval()
+    torch, processor, model, device, dtype = load_glm_adapter(config, adapter_path)
     prediction, latency = predict_one(
         torch=torch,
         processor=processor,
