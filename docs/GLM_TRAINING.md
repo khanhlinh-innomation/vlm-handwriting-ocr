@@ -28,6 +28,7 @@ uv venv \
 
 uv pip install \
   --python /workspace/vlm-handwriting/venvs/glm-train/bin/python \
+  --index-strategy unsafe-first-match \
   -c requirements/glm-training-constraints.txt \
   -e /workspace/vlm-handwriting/tools/LlamaFactory
 
@@ -35,6 +36,11 @@ uv pip install \
   --python /workspace/vlm-handwriting/venvs/glm-train/bin/python \
   --no-deps -e .
 ```
+
+The explicit index strategy is required because the official CUDA wheel index contains
+`torchdata`, but not the pinned `torchdata==0.11.0`. `unsafe-first-match` keeps the CUDA
+index preferred, then falls back to PyPI only when that index has no compatible version.
+The direct training packages remain pinned by the constraints file.
 
 Verify the isolated environment and the untouched inference environment:
 
