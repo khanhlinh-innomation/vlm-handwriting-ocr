@@ -58,3 +58,5 @@ Run the first fixed validation image:
 Review the one-image artifact before running `--mode smoke`. After smoke20 review, freeze the prompt and decoding configuration. Run the base test once with `--mode test --allow-test`; full validation is reserved for fine-tuning checkpoint selection.
 
 The legacy Colab notebooks are references, not the server execution path. Use the Python scripts for reproducible benchmarks and training. Keep long commands in `tmux`; the laptop may disconnect after detaching, provided the Vast instance remains running.
+
+After the frozen base test is recorded, continue with [the isolated GLM LoRA training workflow](GLM_TRAINING.md). Do not install LLaMA-Factory into the inference `main` environment.

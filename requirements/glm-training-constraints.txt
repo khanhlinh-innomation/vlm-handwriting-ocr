@@ -1,0 +1,10 @@
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.10.0+cu128
+torchvision==0.25.0+cu128
+torchaudio==2.10.0+cu128
+transformers==5.5.0
+accelerate==1.11.0
+datasets==4.0.0
+peft==0.18.1
+trl==0.24.0
+torchdata==0.11.0

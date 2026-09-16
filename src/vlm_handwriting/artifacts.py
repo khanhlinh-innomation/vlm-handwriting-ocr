@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 
-def write_json(path: Path, payload: Mapping[str, Any]) -> None:
+def write_json(path: Path, payload: Any) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(

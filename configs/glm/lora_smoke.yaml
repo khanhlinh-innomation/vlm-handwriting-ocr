@@ -9,41 +9,42 @@ finetuning_type: lora
 lora_rank: 8
 lora_target: all
 
-### frozen dataset
+### deterministic 32-train / 8-validation smoke subset
 dataset_dir: /workspace/vlm-handwriting/data/llamafactory/glm_ocr
-dataset: uit_hwdb_line_train
-eval_dataset: uit_hwdb_line_validation
+dataset: uit_hwdb_line_train_smoke
+eval_dataset: uit_hwdb_line_validation_smoke
 template: glm_ocr
 cutoff_len: 2048
-preprocessing_num_workers: 8
+preprocessing_num_workers: 4
 dataloader_num_workers: 2
 
-### versioned output
-output_dir: /workspace/vlm-handwriting/checkpoints/glm_ocr/lora_full
-logging_steps: 10
-save_strategy: epoch
-save_total_limit: 3
+### disposable smoke output
+output_dir: /workspace/vlm-handwriting/checkpoints/glm_ocr/lora_smoke
+logging_steps: 1
+save_strategy: steps
+save_steps: 2
+save_total_limit: 1
 plot_loss: true
 overwrite_output_dir: false
 save_only_model: false
 report_to: none
 
-### train
+### two optimizer steps, effective batch 16
 per_device_train_batch_size: 4
 gradient_accumulation_steps: 4
 learning_rate: 1.0e-4
-num_train_epochs: 3.0
+max_steps: 2
 lr_scheduler_type: cosine
 warmup_ratio: 0.1
 bf16: true
 fp16: false
 seed: 42
 ddp_timeout: 180000000
-resume_from_checkpoint: null
 skip_memory_metrics: false
 
-### validation loss (checkpoint selection is performed later with validation CER)
+### smoke validation loss
 do_eval: true
 per_device_eval_batch_size: 1
-eval_strategy: epoch
+eval_strategy: steps
+eval_steps: 2
 predict_with_generate: false

@@ -28,6 +28,7 @@ Do not regenerate the split or tune against the test set.
 - A gated server-native GLM-OCR base benchmark is ready for `one -> smoke20 -> frozen test`.
 
 See [the canonical project context](docs/PROJECT_CONTEXT.md), [experiment protocol](docs/EXPERIMENT_PROTOCOL.md), and [server setup](docs/SERVER_SETUP.md).
+The gated GLM LoRA workflow is documented in [GLM training](docs/GLM_TRAINING.md).
 
 ## Layout
 

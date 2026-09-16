@@ -5,13 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
 import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import yaml
 
 from vlm_handwriting.artifacts import write_csv, write_json
@@ -23,6 +21,7 @@ from vlm_handwriting.benchmark import (
 )
 from vlm_handwriting.data import find_manifest_root, load_manifest, resolve_image_path
 from vlm_handwriting.environment import collect_environment
+from vlm_handwriting.glm import load_glm_base, predict_one
 from vlm_handwriting.metrics import (
     character_error_rate,
     corpus_metrics,
@@ -70,77 +69,6 @@ def load_config(path: Path) -> dict[str, Any]:
     return config
 
 
-def load_glm(config: dict[str, Any]) -> tuple[Any, Any, Any, Any]:
-    import torch
-    from transformers import AutoProcessor, GlmOcrForConditionalGeneration
-
-    if not torch.cuda.is_available():
-        raise RuntimeError("GLM-OCR benchmark requires a CUDA GPU")
-
-    seed = int(config["evaluation"]["smoke_seed"])
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-
-    dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
-    model_id = str(config["model"]["id"])
-    processor = AutoProcessor.from_pretrained(model_id)
-    torch.cuda.empty_cache()
-    torch.cuda.reset_peak_memory_stats()
-    model = GlmOcrForConditionalGeneration.from_pretrained(
-        model_id,
-        dtype=dtype,
-        device_map="auto",
-    ).eval()
-    device = next(model.parameters()).device
-    return torch, processor, model, (device, dtype)
-
-
-def predict_one(
-    *,
-    torch: Any,
-    processor: Any,
-    model: Any,
-    device: Any,
-    image_path: Path,
-    prompt: str,
-    generation: dict[str, Any],
-) -> tuple[str, float]:
-    messages = [
-        {
-            "role": "user",
-            "content": [
-                {"type": "image", "path": str(image_path)},
-                {"type": "text", "text": prompt},
-            ],
-        }
-    ]
-    inputs = processor.apply_chat_template(
-        messages,
-        tokenize=True,
-        add_generation_prompt=True,
-        return_dict=True,
-        return_tensors="pt",
-    )
-    inputs.pop("token_type_ids", None)
-    inputs = inputs.to(device)
-
-    torch.cuda.synchronize()
-    started = time.perf_counter()
-    with torch.inference_mode():
-        output = model.generate(
-            **inputs,
-            max_new_tokens=int(generation["max_new_tokens"]),
-            do_sample=bool(generation["do_sample"]),
-            repetition_penalty=float(generation["repetition_penalty"]),
-        )
-    torch.cuda.synchronize()
-    latency = time.perf_counter() - started
-    prompt_tokens = inputs["input_ids"].shape[-1]
-    prediction = processor.decode(output[0][prompt_tokens:], skip_special_tokens=True).strip()
-    return normalize_for_evaluation(prediction), latency
-
-
 def main() -> None:
     args = parse_args()
     config = load_config(args.config)
@@ -167,7 +95,7 @@ def main() -> None:
     prediction_path = run_dir / f"glm_ocr_base_{artifact_tag}_predictions.csv"
     metrics_path = run_dir / f"glm_ocr_base_{artifact_tag}_metrics.json"
 
-    torch, processor, model, (device, dtype) = load_glm(config)
+    torch, processor, model, device, dtype = load_glm_base(config)
     torch.cuda.empty_cache()
     torch.cuda.reset_peak_memory_stats()
     started = time.perf_counter()
