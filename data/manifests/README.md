@@ -2,7 +2,7 @@
 
 Actual manifests are not committed until dataset redistribution permission is confirmed.
 
-Download `ntklinhfitus/uit-hwdb-manifest`. Expected files include `master_manifest.csv`, `master_manifest.jsonl`, `train.csv`, `val.csv`, `test.csv`, `dataset_report.csv`, `writer_split.csv`, and `corrupt_images.csv`.
+Download `ntklinhfitus/hwdb-manifest`. Expected files include `master_manifest.csv`, `master_manifest.jsonl`, `train.csv`, `val.csv`, `test.csv`, `dataset_report.csv`, `writer_split.csv`, and `corrupt_images.csv`.
 
 Expected split counts are 6,346 train, 682 validation, and 201 test. Writers must be disjoint.
 

@@ -97,7 +97,7 @@ Do not mix word or paragraph samples into the first training round.
 A second Kaggle dataset was created:
 
 ```text
-ntklinhfitus/uit-hwdb-manifest
+ntklinhfitus/hwdb-manifest
 ```
 
 It contains the frozen experiment split and metadata.
@@ -1047,7 +1047,7 @@ Dataset IDs:
 
 ```text
 ntklinhfitus/uit-hwdb
-ntklinhfitus/uit-hwdb-manifest
+ntklinhfitus/hwdb-manifest
 ```
 
 After download, verify:

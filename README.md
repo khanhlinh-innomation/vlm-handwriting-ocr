@@ -13,7 +13,7 @@ The project uses a frozen, writer-disjoint UIT-HWDB-line split and strict OCR ev
 | Test | 201 | 6 |
 
 - Raw Kaggle dataset: `ntklinhfitus/uit-hwdb`
-- Manifest Kaggle dataset: `ntklinhfitus/uit-hwdb-manifest`
+- Manifest Kaggle dataset: `ntklinhfitus/hwdb-manifest`
 - Fixed smoke benchmark: 20 validation rows, seed 42
 - Primary metric: corpus character error rate (CER)
 - Best checkpoint: lowest validation CER

@@ -11,7 +11,7 @@ from pathlib import Path
 from vlm_handwriting.data import find_manifest_root, find_raw_root, load_manifest
 
 RAW_HANDLE = "ntklinhfitus/uit-hwdb"
-MANIFEST_HANDLE = "ntklinhfitus/uit-hwdb-manifest"
+MANIFEST_HANDLE = "ntklinhfitus/hwdb-manifest"
 
 
 def main() -> None:

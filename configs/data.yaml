@@ -1,5 +1,5 @@
 raw_dataset_handle: ntklinhfitus/uit-hwdb
-manifest_dataset_handle: ntklinhfitus/uit-hwdb-manifest
+manifest_dataset_handle: ntklinhfitus/hwdb-manifest
 
 paths:
   data_root_env: VLM_DATA_ROOT
