@@ -207,6 +207,14 @@ to the clean `full_sft_smoke_run2` directory, and validates the saved model in a
 separate generation pass. Full-run checkpoint selection likewise uses separate
 full-validation generation CER, matching the project protocol.
 
+The corrected run2 completed both optimizer steps and exited with code 0. It
+reported finite train loss 1.945588, runtime 48.539 seconds, throughput 1.3185
+samples/s and 0.0412 optimizer steps/s, then saved the full model to
+`checkpoints/paddleocr_vl/full_sft_smoke_run2`. The single-card asynchronous-save
+warning is non-blocking because synchronous saving completed. Before declaring
+the smoke fully passed, record peak memory from the step logs and verify a fresh
+process can reload the saved artifact and generate one frozen validation line.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
