@@ -114,13 +114,31 @@ Run the frozen base configuration on all 201 test lines exactly once:
 
 Do not alter the base prompt or generation settings from the test result.
 
+The one authorized base test run completed on all 201 frozen test lines:
+
+| Metric | Result |
+|---|---:|
+| CER | 0.263166 (26.32%) |
+| WER | 0.629741 (62.97%) |
+| Exact-line accuracy | 0.004975 (1/201, 0.50%) |
+| Mean / p50 / p90 latency | 0.407 / 0.400 / 0.518 s |
+| Throughput | 2.374 samples/s |
+| Peak allocated VRAM | 1.925 GiB |
+| Total runtime | 84.650 s |
+
+Artifacts are under `outputs/paddleocr_vl/base/20260917T173018Z`. The base test
+is now sealed: do not tune prompts or generation settings from these test rows.
+PaddleOCR-VL-1.6 is the strongest frozen base by test CER (26.32% versus GLM
+31.95% and TeleOCR 89.36%), while fine-tuned GLM remains the strongest result
+overall at 12.46% test CER.
+
 ## Remaining order
 
-1. Run the fixed 20-row validation smoke and inspect repetition/output shape.
-2. Freeze generation settings and run the 201-row base test exactly once.
-3. Build an isolated PaddlePaddle 3.2+/ERNIEKit release-v1.5 environment.
-4. Convert only train/validation manifests to ERNIEKit multimodal JSONL.
-5. Run finite-loss and tiny full-SFT smoke gates; measure VRAM on the RTX 5090.
-6. Launch two epochs only if the smoke passes within 32 GB.
-7. Select by full-validation generation CER; run epoch 3 only if justified.
-8. Evaluate exactly one frozen checkpoint on test.
+1. Build an isolated PaddlePaddle 3.2+/ERNIEKit release-v1.5 environment.
+2. Verify CUDA, RTX 5090 visibility, and a BF16 matrix operation before adding
+   the complete ERNIEKit dependency set.
+3. Convert only train/validation manifests to ERNIEKit multimodal JSONL.
+4. Run finite-loss and tiny full-SFT smoke gates; measure VRAM on the RTX 5090.
+5. Launch two epochs only if the smoke passes within 32 GB.
+6. Select by full-validation generation CER; run epoch 3 only if justified.
+7. Evaluate exactly one frozen checkpoint on test.
