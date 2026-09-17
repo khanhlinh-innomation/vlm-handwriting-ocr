@@ -23,3 +23,4 @@ def test_paddle_smoke_config_is_two_step_and_never_uses_test_data() -> None:
     assert config["compute_type"] == "bf16"
     assert config["save_steps"] == 2
     assert config["report_to"] == "none"
+    assert config["output_dir"].endswith("full_sft_smoke_run1")

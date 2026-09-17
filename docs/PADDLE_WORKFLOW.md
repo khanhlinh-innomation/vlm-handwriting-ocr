@@ -192,6 +192,11 @@ an integer protobuf field. The smoke config sets the officially supported
 trainer result files, and checkpoints remain enabled; VisualDL/TensorBoard
 visualization is intentionally omitted from this compatibility smoke.
 
+The failed VisualDL initialization left the original `full_sft_smoke` output
+directory non-empty. Preserve it as setup-failure evidence rather than enabling
+overwrite or deleting it. The versioned smoke config writes the first real
+training attempt to the clean `full_sft_smoke_run1` directory.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129

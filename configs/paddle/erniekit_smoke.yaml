@@ -45,8 +45,8 @@ logging_steps: 1
 report_to: none
 release_grads: true
 gradient_accumulation_steps: 32
-logging_dir: /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_smoke/tensorboard_logs
-output_dir: /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_smoke
+logging_dir: /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_smoke_run1/tensorboard_logs
+output_dir: /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_smoke_run1
 disable_tqdm: false
 
 ### optimizer
