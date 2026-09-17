@@ -33,7 +33,7 @@ def load_paddle_vl_base(
     processor = AutoProcessor.from_pretrained(model_id)
     model = AutoModelForImageTextToText.from_pretrained(
         model_id,
-        torch_dtype=dtype,
+        dtype=dtype,
     ).to(device).eval()
     return torch, processor, model, device, dtype
 
@@ -76,12 +76,6 @@ def predict_one(
         tokenize=True,
         return_dict=True,
         return_tensors="pt",
-        images_kwargs={
-            "size": {
-                "shortest_edge": processor.image_processor.min_pixels,
-                "longest_edge": 1280 * 28 * 28,
-            }
-        },
     )
     moved = _move_inputs(inputs, torch=torch, device=device)
 

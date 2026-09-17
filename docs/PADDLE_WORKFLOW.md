@@ -57,6 +57,13 @@ Review the raw prediction before smoke20. This command may download roughly 2 GB
 of model files on first use. Test access remains blocked unless both `--mode test`
 and `--allow-test` are supplied.
 
+The first server attempt loaded all weights but exposed a Transformers 5 processor
+API difference: the live `PaddleOCRVLImageProcessor` did not publish a direct
+`min_pixels` attribute used by the model-card snippet. The runner now delegates
+image sizing to the checkpoint's own `preprocessor_config.json` defaults
+(`min_pixels=112896`, `max_pixels=1003520`) instead of reading that unstable
+attribute. Cached upstream code is not patched.
+
 ## Remaining order
 
 1. Run the fixed 20-row validation smoke and inspect repetition/output shape.
