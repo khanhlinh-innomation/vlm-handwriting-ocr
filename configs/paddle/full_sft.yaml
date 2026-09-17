@@ -28,5 +28,7 @@ training:
   packing_size: 2
   gradient_accumulation_steps: 32
   recompute: true
+  inline_evaluation: false
+  validation_mode: separate_generation_cer
   checkpoint_metric: validation_cer
   checkpoint_mode: min

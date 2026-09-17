@@ -24,7 +24,7 @@ use_sparse_flash_attn: true
 stage: OCR-VL-SFT
 seed: 42
 do_train: true
-do_eval: true
+do_eval: false
 distributed_dataloader: false
 dataloader_num_workers: 4
 prefetch_factor: 4
@@ -37,7 +37,7 @@ max_steps: 2
 eval_batch_size: 1
 eval_iters: 32
 eval_steps: 2
-evaluation_strategy: steps
+evaluation_strategy: "no"
 save_steps: 2
 save_total_limit: 1
 save_strategy: steps
@@ -45,8 +45,8 @@ logging_steps: 1
 report_to: none
 release_grads: true
 gradient_accumulation_steps: 32
-logging_dir: /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_smoke_run1/tensorboard_logs
-output_dir: /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_smoke_run1
+logging_dir: /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_smoke_run2/tensorboard_logs
+output_dir: /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_smoke_run2
 disable_tqdm: false
 
 ### optimizer

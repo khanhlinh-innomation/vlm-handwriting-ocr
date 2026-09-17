@@ -197,6 +197,16 @@ directory non-empty. Preserve it as setup-failure evidence rather than enabling
 overwrite or deleting it. The versioned smoke config writes the first real
 training attempt to the clean `full_sft_smoke_run1` directory.
 
+That run completed its two optimizer steps, then failed before checkpoint save
+when the trainer attempted scheduled evaluation. In ERNIEKit release/v1.5's
+OCR-VL workflow, `eval_dataset` is hard-coded to `None`; the configured
+validation JSONL is therefore not attached to the trainer. Evaluation is called
+before checkpoint saving, so the in-memory updates from this failed process are
+not a reusable artifact. The corrected smoke disables inline evaluation, writes
+to the clean `full_sft_smoke_run2` directory, and validates the saved model in a
+separate generation pass. Full-run checkpoint selection likewise uses separate
+full-validation generation CER, matching the project protocol.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
