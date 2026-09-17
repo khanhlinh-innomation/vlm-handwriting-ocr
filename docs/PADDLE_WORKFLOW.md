@@ -132,9 +132,25 @@ PaddleOCR-VL-1.6 is the strongest frozen base by test CER (26.32% versus GLM
 31.95% and TeleOCR 89.36%), while fine-tuned GLM remains the strongest result
 overall at 12.46% test CER.
 
+## Gate 5: isolated Paddle GPU runtime
+
+The first compatibility probe used PaddlePaddle 3.2.1 from the CUDA 12.6 index.
+Import and GPU discovery succeeded, but the first BF16 operation aborted because
+that wheel was compiled only for architectures 61, 70, 75, 80, 86, 89, and 90;
+the RTX 5090 reports compute capability 12.0 (`sm_120`). This is a wheel
+architecture mismatch, not a data, model-code, or VRAM failure.
+
+Paddle's current official compatibility table recommends CUDA 12.9 for
+consumer Blackwell `sm_120`, and its current Linux install guide publishes
+PaddlePaddle 3.3.0 on the CUDA 12.9 index. Replace only the package inside the
+isolated `paddle-train` environment, then repeat the BF16 operation before
+installing ERNIEKit. Do not install Paddle into `/venv/main` and do not compile
+an unofficial wheel.
+
 ## Remaining order
 
-1. Build an isolated PaddlePaddle 3.2+/ERNIEKit release-v1.5 environment.
+1. Replace the rejected PaddlePaddle 3.2.1/cu126 wheel with the official
+   PaddlePaddle 3.3.0/cu129 wheel in the isolated environment.
 2. Verify CUDA, RTX 5090 visibility, and a BF16 matrix operation before adding
    the complete ERNIEKit dependency set.
 3. Convert only train/validation manifests to ERNIEKit multimodal JSONL.
