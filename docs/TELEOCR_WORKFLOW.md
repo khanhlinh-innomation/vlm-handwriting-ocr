@@ -171,6 +171,39 @@ Reload the saved adapter in a fresh process:
 
 Do not launch full training until both commands pass.
 
+### Full three-epoch train
+
+The reload gate has passed. Full training uses all 6,346 training lines, evaluates
+loss on all 682 validation lines, and saves complete resumable checkpoints once per
+epoch. With effective batch size 16 this is 397 optimizer steps per epoch and 1,191
+steps in total. The smoke speed projects roughly four hours on the RTX 5090; this is
+an estimate, not a deadline.
+
+Run inside the server's existing tmux session so the laptop may disconnect:
+
+```bash
+cd /workspace/vlm-handwriting/repo
+export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
+set -o pipefail
+
+/workspace/vlm-handwriting/venvs/teleocr/bin/python \
+  scripts/train_teleocr.py \
+  --config configs/teleocr/lora.yaml \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  2>&1 | tee /workspace/vlm-handwriting/logs/teleocr-lora-full.log
+```
+
+Expected checkpoints are `checkpoint-397`, `checkpoint-794`, and
+`checkpoint-1191`. Each contains adapter weights plus optimizer, scheduler, RNG,
+and trainer state. If interrupted after a checkpoint, pass its exact path with
+`--resume-from-checkpoint`; do not remove or overwrite the output directory.
+
+After launch, detach tmux with `Ctrl+B`, then `D`. The laptop can be closed, but the
+GPU server instance must remain running. After completion, rank all three
+checkpoints on the 682-row validation split by generation CER before opening the
+test set exactly once for the selected checkpoint.
+
 Generated artifacts remain outside Git under:
 
 ```text

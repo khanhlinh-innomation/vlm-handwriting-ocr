@@ -22,7 +22,20 @@ def test_teleocr_smoke_config_is_small_and_test_free() -> None:
     config = yaml.safe_load(path.read_text(encoding="utf-8"))
     assert config["data"] == {"train_size": 32, "validation_size": 8, "seed": 42}
     assert config["training"]["max_steps"] == 2
+    assert config["training"]["strategy"] == "steps"
     assert config["training"]["gradient_accumulation_steps"] == 16
+    assert config["training"]["overwrite_output_dir"] is False
+    assert "test" not in str(config).lower()
+
+
+def test_teleocr_full_config_is_three_epoch_validation_only() -> None:
+    path = REPO_ROOT / "configs" / "teleocr" / "lora.yaml"
+    config = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert config["data"] == {"seed": 42}
+    assert config["training"]["num_train_epochs"] == 3.0
+    assert config["training"]["gradient_accumulation_steps"] == 16
+    assert config["training"]["strategy"] == "epoch"
+    assert config["training"]["save_total_limit"] == 3
     assert config["training"]["overwrite_output_dir"] is False
     assert "test" not in str(config).lower()
 
