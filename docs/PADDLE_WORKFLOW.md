@@ -235,12 +235,37 @@ Running all three epochs in one job is safe for selection because every epoch
 artifact is retained; the winner is chosen later by separate full-validation
 generation CER. The test split remains sealed until that choice is frozen.
 
+The full run completed 300/300 optimizer steps with exit code 0. It reported
+train loss 0.618072, runtime 52 minutes 2 seconds, 3.0746 samples/s, and 0.0961
+optimizer steps/s. ERNIEKit's `progress_or_epoch: 1.0` is normalized completion
+progress for this max-step-driven job; the 300 steps cover approximately three
+dataset passes under packing size 2 and gradient accumulation 32. The final
+model was saved under `checkpoints/paddleocr_vl/full_sft_3ep_run1`.
+
+Rank the retained epoch checkpoints on the frozen validation split with:
+
+```bash
+/venv/main/bin/python scripts/benchmark_paddle_checkpoint.py \
+  --checkpoint-path \
+    /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_3ep_run1/checkpoint-100 \
+    /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_3ep_run1/checkpoint-200 \
+    /workspace/vlm-handwriting/checkpoints/paddleocr_vl/full_sft_3ep_run1/checkpoint-300 \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --split validation
+```
+
+After freezing the lowest-validation-CER checkpoint, evaluate only that path on
+test by adding `--split test --allow-test`. The runner rejects multiple
+checkpoints on test.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
    constraint, then rerun an import/GPU check.
 2. Convert only train/validation manifests to ERNIEKit multimodal JSONL.
 3. Run finite-loss and tiny full-SFT smoke gates; measure VRAM on the RTX 5090.
-4. Launch two epochs only if the smoke passes within 32 GB.
-5. Select by full-validation generation CER; run epoch 3 only if justified.
-6. Evaluate exactly one frozen checkpoint on test.
+4. Completed the 300-step, three-epoch-equivalent full SFT run.
+5. Rank checkpoints 100, 200, and 300 by full-validation generation CER.
+6. Evaluate exactly one validation-selected checkpoint on test.
