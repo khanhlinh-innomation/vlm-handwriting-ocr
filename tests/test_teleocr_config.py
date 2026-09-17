@@ -15,7 +15,8 @@ def test_teleocr_base_config_preserves_official_prompt_and_frozen_smoke() -> Non
     assert config["generation"] == {
         "do_sample": False,
         "use_cache": True,
-        "max_new_tokens": 512,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.1,
     }
     assert config["evaluation"]["smoke_size"] == 20
     assert config["evaluation"]["smoke_seed"] == 42

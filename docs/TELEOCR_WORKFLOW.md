@@ -10,6 +10,7 @@ base inference and save/reload smoke checks.
 - Model: `StarDoc-AI/TeleOCR`
 - System prompt: `You are a helpful assistant.`
 - OCR prompt: `Please output the text content from the image.`
+- Deterministic generation: `do_sample=false`, `max_new_tokens=256`, `repetition_penalty=1.1`
 - Train / validation / test: 6,346 / 682 / 201 writer-disjoint lines
 - Smoke set: 20 deterministic validation rows, seed 42
 - Evaluation normalization: Unicode NFC only
@@ -89,6 +90,12 @@ Run only after the one-image output has been reviewed:
 
 Do not tune from the test set. If smoke20 reveals a prompt or generation failure,
 fix it and repeat validation smoke before opening test.
+
+The first smoke20 attempt used `max_new_tokens=512` and exposed a repetition
+collapse on `28.jpg`: 57 reference characters versus 537 predicted characters,
+CER 9.2281, and 13.702 seconds latency. The validation-only correction reduces
+the cap to 256 and adds repetition penalty 1.1. The exact smoke20 set must be run
+again and pass before test access.
 
 ## Gate 4: frozen base test
 

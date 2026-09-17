@@ -105,6 +105,7 @@ def predict_one(
             use_cache=bool(generation["use_cache"]),
             max_new_tokens=int(generation["max_new_tokens"]),
             do_sample=bool(generation["do_sample"]),
+            repetition_penalty=float(generation["repetition_penalty"]),
         )
     torch.cuda.synchronize()
     latency = time.perf_counter() - started
