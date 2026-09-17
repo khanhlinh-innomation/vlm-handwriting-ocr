@@ -57,12 +57,33 @@ Review the raw prediction before smoke20. This command may download roughly 2 GB
 of model files on first use. Test access remains blocked unless both `--mode test`
 and `--allow-test` are supplied.
 
+The fixed one-image run passed in BF16 on the RTX 5090: CER 0.061728, WER
+0.176471, latency 1.186 seconds, and peak allocated VRAM 1.822 GiB. Inspect the
+saved raw reference and prediction before continuing; a single example is a
+pipeline gate, not a quality estimate.
+
 The first server attempt loaded all weights but exposed a Transformers 5 processor
 API difference: the live `PaddleOCRVLImageProcessor` did not publish a direct
 `min_pixels` attribute used by the model-card snippet. The runner now delegates
 image sizing to the checkpoint's own `preprocessor_config.json` defaults
 (`min_pixels=112896`, `max_pixels=1003520`) instead of reading that unstable
 attribute. Cached upstream code is not patched.
+
+## Gate 3: fixed validation smoke20
+
+After confirming that the one-image prediction contains transcription only, run:
+
+```bash
+/venv/main/bin/python scripts/benchmark_paddle.py \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --mode smoke \
+  2>&1 | tee /workspace/vlm-handwriting/logs/paddle-base-smoke20.log
+```
+
+Review per-line predictions and any repetition outlier before freezing the base
+generation configuration. The test split remains sealed during this gate.
 
 ## Remaining order
 
