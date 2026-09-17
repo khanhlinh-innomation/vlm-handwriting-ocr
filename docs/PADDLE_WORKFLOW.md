@@ -92,6 +92,28 @@ configuration, inspect the three rows with highest sample CER for unexpected
 markup, special tokens, or repetition. Artifacts are under
 `outputs/paddleocr_vl/base/20260917T171155Z`.
 
+The three highest-CER rows contained short transcription-only outputs with 17,
+59, and 19 predicted characters. Their errors were ordinary recognition errors;
+there was no markup, special-token leakage, or repetition. Freeze the native
+`OCR:` prompt with deterministic decoding, a 256-token cap, repetition penalty
+1.0, and native checkpoint image sizing.
+
+## Gate 4: frozen base test
+
+Run the frozen base configuration on all 201 test lines exactly once:
+
+```bash
+/venv/main/bin/python scripts/benchmark_paddle.py \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --mode test \
+  --allow-test \
+  2>&1 | tee /workspace/vlm-handwriting/logs/paddle-base-test.log
+```
+
+Do not alter the base prompt or generation settings from the test result.
+
 ## Remaining order
 
 1. Run the fixed 20-row validation smoke and inspect repetition/output shape.
