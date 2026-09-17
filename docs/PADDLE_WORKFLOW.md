@@ -147,14 +147,28 @@ isolated `paddle-train` environment, then repeat the BF16 operation before
 installing ERNIEKit. Do not install Paddle into `/venv/main` and do not compile
 an unofficial wheel.
 
+The replacement gate passed: PaddlePaddle 3.3.0 reported CUDA runtime 12.9,
+found the RTX 5090 at compute capability 12.0, and completed a synchronized
+1024-by-1024 BF16 matrix multiplication. The host Driver API reported 12.8; this
+did not block the tested operation. The missing-`ccache` and deprecated
+`paddle.device.cuda.synchronize` messages were non-blocking warnings.
+
+## Gate 6: install ERNIEKit without changing the verified wheel
+
+Clone the pinned upstream branch outside the experiment repository and install
+its dependencies into the same isolated environment. Use
+`requirements/paddle-training-constraints.txt`, then recheck the Paddle version
+and BF16 operation before any training smoke. The repository includes
+`scripts/prepare_paddle_training.py`, which converts only frozen train and
+validation rows to the official ERNIEKit JSONL structure; it intentionally
+exports zero test rows.
+
 ## Remaining order
 
-1. Replace the rejected PaddlePaddle 3.2.1/cu126 wheel with the official
-   PaddlePaddle 3.3.0/cu129 wheel in the isolated environment.
-2. Verify CUDA, RTX 5090 visibility, and a BF16 matrix operation before adding
-   the complete ERNIEKit dependency set.
-3. Convert only train/validation manifests to ERNIEKit multimodal JSONL.
-4. Run finite-loss and tiny full-SFT smoke gates; measure VRAM on the RTX 5090.
-5. Launch two epochs only if the smoke passes within 32 GB.
-6. Select by full-validation generation CER; run epoch 3 only if justified.
-7. Evaluate exactly one frozen checkpoint on test.
+1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
+   constraint, then rerun an import/GPU check.
+2. Convert only train/validation manifests to ERNIEKit multimodal JSONL.
+3. Run finite-loss and tiny full-SFT smoke gates; measure VRAM on the RTX 5090.
+4. Launch two epochs only if the smoke passes within 32 GB.
+5. Select by full-validation generation CER; run epoch 3 only if justified.
+6. Evaluate exactly one frozen checkpoint on test.

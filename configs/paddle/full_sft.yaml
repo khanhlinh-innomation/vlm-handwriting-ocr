@@ -1,12 +1,32 @@
 model:
   id: PaddlePaddle/PaddleOCR-VL-1.6
 
-training:
+runtime:
   framework: erniekit
+  ernie_branch: release/v1.5
+  paddlepaddle_gpu: 3.3.0
+  paddle_cuda_wheel: cu129
+  required_compute_capability: sm_120
+
+data:
+  format: erniekit_jsonl
+  prompt: "OCR:"
+  train_rows: 6346
+  validation_rows: 682
+  test_rows_exported: 0
+  smoke_train_rows: 128
+  smoke_validation_rows: 32
+  seed: 42
+
+training:
   method: full_sft
   learning_rate: 0.000005
   initial_epochs: 2
   optional_epoch_3: validation_cer_must_improve
   precision: bf16
+  max_seq_len: 8192
+  packing_size: 2
+  gradient_accumulation_steps: 32
+  recompute: true
   checkpoint_metric: validation_cer
   checkpoint_mode: min

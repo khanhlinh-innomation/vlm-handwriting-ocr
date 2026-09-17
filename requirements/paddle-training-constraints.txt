@@ -1,0 +1,4 @@
+# Preserve the verified RTX 5090 / sm_120 runtime while installing ERNIEKit.
+paddlepaddle-gpu==3.3.0
+numpy==1.26.4
+setuptools==79.0.1
