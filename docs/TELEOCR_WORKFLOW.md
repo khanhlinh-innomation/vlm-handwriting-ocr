@@ -127,6 +127,50 @@ verify these gates in an isolated environment first:
 7. Rank every checkpoint on all 682 validation rows by CER.
 8. Freeze exactly one checkpoint and evaluate the 201-row test once.
 
+### Compatibility and two-step LoRA smoke
+
+Reinstall the TeleOCR requirements after pulling so the isolated environment also
+contains the pinned PEFT runtime, then launch the guarded smoke script:
+
+```bash
+cd /workspace/vlm-handwriting/repo
+git pull --ff-only
+
+uv pip install \
+  --python /workspace/vlm-handwriting/venvs/teleocr/bin/python \
+  -r requirements/teleocr.txt
+
+set -o pipefail
+/workspace/vlm-handwriting/venvs/teleocr/bin/python \
+  scripts/train_teleocr_smoke.py \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  2>&1 | tee /workspace/vlm-handwriting/logs/teleocr-lora-smoke.log
+```
+
+This command stops before optimization unless the native model returns a finite
+supervised loss and all trainable parameters are LoRA parameters under the language
+model. It then runs exactly two optimizer steps over deterministic 32/8 train and
+validation subsets and saves the adapter under:
+
+```text
+/workspace/vlm-handwriting/checkpoints/teleocr/lora_smoke
+```
+
+Reload the saved adapter in a fresh process:
+
+```bash
+/workspace/vlm-handwriting/venvs/teleocr/bin/python \
+  scripts/verify_teleocr_adapter.py \
+  --adapter-path /workspace/vlm-handwriting/checkpoints/teleocr/lora_smoke \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-dir /workspace/vlm-handwriting/outputs/teleocr/lora_smoke_verify \
+  2>&1 | tee /workspace/vlm-handwriting/logs/teleocr-lora-smoke-verify.log
+```
+
+Do not launch full training until both commands pass.
+
 Generated artifacts remain outside Git under:
 
 ```text
