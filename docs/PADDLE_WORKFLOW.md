@@ -170,6 +170,13 @@ native `OCR:` prompt, and zero exported test rows. The next command must use
 not the planned two-epoch run. Its purpose is to prove finite loss, checkpoint
 save, evaluation, and measured RTX 5090 memory usage.
 
+ERNIEKit's distributed launcher invokes `python` by name for its child process.
+Calling the `erniekit` executable by absolute path is therefore insufficient
+when the shell still has `/venv/main/bin` first on `PATH`: the child process
+cannot import Paddle. Activate `/workspace/vlm-handwriting/venvs/paddle-train`
+and verify `command -v python` before every ERNIEKit launch. Do not install
+PaddlePaddle into `/venv/main` as a workaround.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
