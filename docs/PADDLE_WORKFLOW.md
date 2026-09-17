@@ -177,6 +177,14 @@ cannot import Paddle. Activate `/workspace/vlm-handwriting/venvs/paddle-train`
 and verify `command -v python` before every ERNIEKit launch. Do not install
 PaddlePaddle into `/venv/main` as a workaround.
 
+ERNIEKit also treats `model_name_or_path` as a local directory during image
+processor initialization; it does not materialize a Hugging Face repository ID
+at that point. Download `PaddlePaddle/PaddleOCR-VL-1.6` with
+`huggingface_hub.snapshot_download` into
+`/workspace/vlm-handwriting/models/PaddleOCR-VL-1.6` before launching. The
+smoke config points to that local directory so `preprocessor_config.json` and
+the remaining model assets are resolved deterministically.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129

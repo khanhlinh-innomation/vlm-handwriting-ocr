@@ -14,7 +14,7 @@ sft_image_rescale: true
 image_dtype: "float32"
 
 ### model and official full-SFT path
-model_name_or_path: PaddlePaddle/PaddleOCR-VL-1.6
+model_name_or_path: /workspace/vlm-handwriting/models/PaddleOCR-VL-1.6
 fine_tuning: Full
 multimodal: true
 use_flash_attention: true

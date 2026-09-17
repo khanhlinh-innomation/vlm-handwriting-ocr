@@ -10,7 +10,9 @@ def test_paddle_smoke_config_is_two_step_and_never_uses_test_data() -> None:
     with path.open(encoding="utf-8") as handle:
         config = yaml.safe_load(handle)
 
-    assert config["model_name_or_path"] == "PaddlePaddle/PaddleOCR-VL-1.6"
+    assert config["model_name_or_path"] == (
+        "/workspace/vlm-handwriting/models/PaddleOCR-VL-1.6"
+    )
     assert config["fine_tuning"] == "Full"
     assert config["train_dataset_path"].endswith("smoke_train.jsonl")
     assert config["eval_dataset_path"].endswith("smoke_validation.jsonl")
