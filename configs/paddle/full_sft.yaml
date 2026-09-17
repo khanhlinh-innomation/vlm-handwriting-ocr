@@ -21,8 +21,10 @@ data:
 training:
   method: full_sft
   learning_rate: 0.000005
-  initial_epochs: 2
-  optional_epoch_3: validation_cer_must_improve
+  epochs: 3
+  steps_per_epoch: 100
+  max_steps: 300
+  save_steps: 100
   precision: bf16
   max_seq_len: 8192
   packing_size: 2
@@ -30,5 +32,9 @@ training:
   recompute: true
   inline_evaluation: false
   validation_mode: separate_generation_cer
+  candidate_checkpoints:
+    - checkpoint-100
+    - checkpoint-200
+    - checkpoint-300
   checkpoint_metric: validation_cer
   checkpoint_mode: min

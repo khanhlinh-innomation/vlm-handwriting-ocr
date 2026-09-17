@@ -228,6 +228,13 @@ model-output object. The loader now uses the official base runtime config with
 to source every trained tensor from the saved artifact. It also preserves the
 official `tie_word_embeddings=False`; no checkpoint file is edited.
 
+Fresh-process reload and validation inference subsequently passed. The full run
+therefore uses `configs/paddle/erniekit_full_3ep.yaml`: 300 optimizer steps,
+approximately 100 steps per epoch, and checkpoints at steps 100, 200, and 300.
+Running all three epochs in one job is safe for selection because every epoch
+artifact is retained; the winner is chosen later by separate full-validation
+generation CER. The test split remains sealed until that choice is frozen.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
