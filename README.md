@@ -111,10 +111,12 @@ Start with one validation image; do not jump directly to smoke, test, or trainin
 ```bash
 cd /workspace/vlm-handwriting/repo
 git pull --ff-only
-uv pip install --python /venv/main/bin/python -r requirements/teleocr.txt
+mkdir -p /workspace/vlm-handwriting/venvs
+uv venv --python /venv/main/bin/python --system-site-packages /workspace/vlm-handwriting/venvs/teleocr
+uv pip install --python /workspace/vlm-handwriting/venvs/teleocr/bin/python -r requirements/teleocr.txt
 export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
 
-/venv/main/bin/python scripts/benchmark_teleocr.py \
+/workspace/vlm-handwriting/venvs/teleocr/bin/python scripts/benchmark_teleocr.py \
   --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
   --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
   --output-root /workspace/vlm-handwriting/outputs \

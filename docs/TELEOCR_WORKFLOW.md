@@ -15,7 +15,12 @@ base inference and save/reload smoke checks.
 - Evaluation normalization: Unicode NFC only
 - Primary metric: corpus CER
 
-## Gate 1: install without replacing Torch
+## Gate 1: isolated compatible runtime
+
+TeleOCR's official repository pins `transformers==4.57.1`. Do not run the remote
+model code with Transformers 5.x: its Qwen2.5-VL RoPE implementation expects the
+4.x `ROPE_INIT_FUNCTIONS["default"]` API. Keep `/venv/main` unchanged and create a
+model-specific environment that reuses the verified CUDA-enabled Torch packages.
 
 ```bash
 cd /workspace/vlm-handwriting/repo
@@ -24,15 +29,30 @@ git pull --ff-only
 /venv/main/bin/python -c \
   'import torch, transformers; print(torch.__version__, torch.version.cuda, transformers.__version__)'
 
-uv pip install \
+mkdir -p /workspace/vlm-handwriting/venvs
+
+uv venv \
   --python /venv/main/bin/python \
+  --system-site-packages \
+  /workspace/vlm-handwriting/venvs/teleocr
+
+uv pip install \
+  --python /workspace/vlm-handwriting/venvs/teleocr/bin/python \
   -r requirements/teleocr.txt
 
-/venv/main/bin/python -c \
-  'import torch, transformers; print(torch.__version__, torch.version.cuda, transformers.__version__); assert torch.__version__ == "2.10.0+cu128"'
+/workspace/vlm-handwriting/venvs/teleocr/bin/python -c \
+  'import torch, transformers; print(torch.__version__, torch.version.cuda, transformers.__version__); assert torch.__version__ == "2.10.0+cu128"; assert transformers.__version__ == "4.57.1"'
 ```
 
-Stop if the verified `torch==2.10.0+cu128` build changes.
+Expected version pair in this environment:
+
+```text
+torch        2.10.0+cu128
+transformers 4.57.1
+```
+
+Stop if the verified Torch build changes. The GLM environment remains `/venv/main`
+and is not modified by this setup.
 
 ## Gate 2: one fixed validation image
 
@@ -42,7 +62,7 @@ export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
 mkdir -p /workspace/vlm-handwriting/{outputs,logs,cache}
 set -o pipefail
 
-/venv/main/bin/python scripts/benchmark_teleocr.py \
+/workspace/vlm-handwriting/venvs/teleocr/bin/python scripts/benchmark_teleocr.py \
   --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
   --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
   --output-root /workspace/vlm-handwriting/outputs \
@@ -59,7 +79,7 @@ writing all succeed without OOM or repetition collapse.
 Run only after the one-image output has been reviewed:
 
 ```bash
-/venv/main/bin/python scripts/benchmark_teleocr.py \
+/workspace/vlm-handwriting/venvs/teleocr/bin/python scripts/benchmark_teleocr.py \
   --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
   --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
   --output-root /workspace/vlm-handwriting/outputs \
@@ -75,7 +95,7 @@ fix it and repeat validation smoke before opening test.
 After freezing the native prompt and generation config, run the base test once:
 
 ```bash
-/venv/main/bin/python scripts/benchmark_teleocr.py \
+/workspace/vlm-handwriting/venvs/teleocr/bin/python scripts/benchmark_teleocr.py \
   --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
   --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
   --output-root /workspace/vlm-handwriting/outputs \

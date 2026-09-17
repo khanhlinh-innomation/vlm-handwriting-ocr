@@ -19,3 +19,10 @@ def test_teleocr_base_config_preserves_official_prompt_and_frozen_smoke() -> Non
     }
     assert config["evaluation"]["smoke_size"] == 20
     assert config["evaluation"]["smoke_seed"] == 42
+
+
+def test_teleocr_runtime_pins_official_transformers_version() -> None:
+    requirements = (REPO_ROOT / "requirements" / "teleocr.txt").read_text(encoding="utf-8")
+    assert "transformers==4.57.1" in requirements
+    assert "huggingface-hub==0.36.0" in requirements
+    assert "-c constraints-cu128.txt" in requirements
