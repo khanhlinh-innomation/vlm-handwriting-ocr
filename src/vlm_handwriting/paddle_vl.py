@@ -54,11 +54,31 @@ def validate_paddle_checkpoint(path: Path) -> Path:
 def load_paddle_vl_checkpoint(
     config: dict[str, Any], checkpoint_path: Path
 ) -> tuple[Any, Any, Any, Any, Any]:
-    """Reload an ERNIEKit `save_to_hf` artifact through Transformers."""
+    """Reload ERNIEKit HF weights with the unchanged official base processor."""
+    import torch
+    from transformers import AutoModelForImageTextToText, AutoProcessor
+
     checkpoint = validate_paddle_checkpoint(checkpoint_path)
     local_config = copy.deepcopy(config)
-    local_config["model"]["id"] = str(checkpoint)
-    return load_paddle_vl_base(local_config)
+    seed = int(local_config["evaluation"]["smoke_seed"])
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    if not torch.cuda.is_available():
+        raise RuntimeError("PaddleOCR-VL requires a CUDA GPU")
+    dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+    device = torch.device("cuda:0")
+
+    # ERNIEKit saves processor/tokenizer configs but not chat_template.jinja.
+    # SFT does not modify preprocessing, so keep the official base processor
+    # and load only the trained model weights from the local HF artifact.
+    processor = AutoProcessor.from_pretrained(str(local_config["model"]["id"]))
+    model = AutoModelForImageTextToText.from_pretrained(
+        str(checkpoint),
+        dtype=dtype,
+    ).to(device).eval()
+    return torch, processor, model, device, dtype
 
 
 def _move_inputs(inputs: Any, *, torch: Any, device: Any) -> dict[str, Any]:

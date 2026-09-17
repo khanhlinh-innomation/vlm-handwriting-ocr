@@ -215,6 +215,12 @@ warning is non-blocking because synchronous saving completed. Before declaring
 the smoke fully passed, record peak memory from the step logs and verify a fresh
 process can reload the saved artifact and generate one frozen validation line.
 
+The first fresh-process attempt loaded all 608 fine-tuned weight entries, then
+stopped before generation because ERNIEKit's HF export did not include
+`chat_template.jinja`. This does not invalidate the weights. The verification
+runner now loads the unchanged official base processor/chat template and the
+fine-tuned model weights separately, avoiding mutation of the saved artifact.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
