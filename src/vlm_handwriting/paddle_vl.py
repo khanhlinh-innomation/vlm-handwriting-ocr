@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import random
 import time
 from pathlib import Path
@@ -36,6 +37,28 @@ def load_paddle_vl_base(
         dtype=dtype,
     ).to(device).eval()
     return torch, processor, model, device, dtype
+
+
+def validate_paddle_checkpoint(path: Path) -> Path:
+    """Require the processor, tokenizer, config, and HF weights needed for reload."""
+    checkpoint = Path(path).expanduser().resolve()
+    required = ("config.json", "preprocessor_config.json", "tokenizer_config.json")
+    missing = [name for name in required if not (checkpoint / name).is_file()]
+    if missing:
+        raise FileNotFoundError(f"Paddle checkpoint is missing files: {missing}")
+    if not list(checkpoint.glob("*.safetensors")):
+        raise FileNotFoundError(f"Paddle checkpoint has no root safetensors weights: {checkpoint}")
+    return checkpoint
+
+
+def load_paddle_vl_checkpoint(
+    config: dict[str, Any], checkpoint_path: Path
+) -> tuple[Any, Any, Any, Any, Any]:
+    """Reload an ERNIEKit `save_to_hf` artifact through Transformers."""
+    checkpoint = validate_paddle_checkpoint(checkpoint_path)
+    local_config = copy.deepcopy(config)
+    local_config["model"]["id"] = str(checkpoint)
+    return load_paddle_vl_base(local_config)
 
 
 def _move_inputs(inputs: Any, *, torch: Any, device: Any) -> dict[str, Any]:
