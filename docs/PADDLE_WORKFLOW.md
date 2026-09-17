@@ -163,6 +163,13 @@ and BF16 operation before any training smoke. The repository includes
 validation rows to the official ERNIEKit JSONL structure; it intentionally
 exports zero test rows.
 
+The conversion gate passed with 6,346 training rows, 682 validation rows,
+deterministic 128/32 smoke subsets, valid absolute image paths, the masked
+native `OCR:` prompt, and zero exported test rows. The next command must use
+`configs/paddle/erniekit_smoke.yaml`: exactly two optimizer steps of full SFT,
+not the planned two-epoch run. Its purpose is to prove finite loss, checkpoint
+save, evaluation, and measured RTX 5090 memory usage.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
