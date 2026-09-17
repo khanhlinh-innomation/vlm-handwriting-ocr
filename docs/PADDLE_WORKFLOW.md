@@ -185,6 +185,13 @@ at that point. Download `PaddlePaddle/PaddleOCR-VL-1.6` with
 smoke config points to that local directory so `preprocessor_config.json` and
 the remaining model assets are resolved deterministically.
 
+With the local snapshot in place, the trainer reached `on_train_begin` but the
+default VisualDL callback failed while serializing a boolean hyperparameter into
+an integer protobuf field. The smoke config sets the officially supported
+`report_to: none` value to disable external reporting. Console logs, evaluation,
+trainer result files, and checkpoints remain enabled; VisualDL/TensorBoard
+visualization is intentionally omitted from this compatibility smoke.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
