@@ -204,6 +204,32 @@ GPU server instance must remain running. After completion, rank all three
 checkpoints on the 682-row validation split by generation CER before opening the
 test set exactly once for the selected checkpoint.
 
+### Rank epoch checkpoints on validation CER
+
+The completed full run took 3:20:02 for 1,191 optimizer steps. Rank all three epoch
+checkpoints on the full validation split; this command cannot access test data by
+default:
+
+```bash
+cd /workspace/vlm-handwriting/repo
+export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
+set -o pipefail
+
+/workspace/vlm-handwriting/venvs/teleocr/bin/python \
+  scripts/benchmark_teleocr_adapter.py \
+  --adapter-path \
+    /workspace/vlm-handwriting/checkpoints/teleocr/lora_full/checkpoint-397 \
+    /workspace/vlm-handwriting/checkpoints/teleocr/lora_full/checkpoint-794 \
+    /workspace/vlm-handwriting/checkpoints/teleocr/lora_full/checkpoint-1191 \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  2>&1 | tee /workspace/vlm-handwriting/logs/teleocr-lora-validation.log
+```
+
+Use only the lowest validation CER to select the final checkpoint. Do not choose by
+training loss, validation loss, or test performance.
+
 Generated artifacts remain outside Git under:
 
 ```text
