@@ -259,6 +259,26 @@ set -o pipefail
 
 Do not rerun test with another checkpoint or use this result to alter the recipe.
 
+### Final frozen-test result
+
+The single authorized test run completed on all 201 lines:
+
+| TeleOCR run | CER | WER | Exact line | Mean latency | Peak VRAM |
+|---|---:|---:|---:|---:|---:|
+| Frozen base | 0.893604 | 1.126081 | 0.0000 | 1.198 s | 3.416 GiB |
+| LoRA `checkpoint-1191` | **0.289498** | **0.615768** | **0.0050** | 1.459 s | 3.435 GiB |
+
+LoRA reduced CER by 0.604106 absolute (67.60% relative) and WER by 0.510313
+absolute (45.32% relative). Mean latency increased 21.79% and throughput decreased
+17.41%. The test artifact is sealed at
+`outputs/teleocr/lora/test/20260917T123447Z`; no further TeleOCR checkpoint or
+generation selection may use the test split.
+
+Under the same frozen 201-line test protocol, fine-tuned GLM-OCR remains stronger:
+CER 0.124561, WER 0.290086, exact-line accuracy 0.129353, and mean latency 0.688 s.
+The TeleOCR run is therefore a successful adaptation experiment, but GLM-OCR is
+the current recommended model on accuracy, latency, and training cost.
+
 Generated artifacts remain outside Git under:
 
 ```text
