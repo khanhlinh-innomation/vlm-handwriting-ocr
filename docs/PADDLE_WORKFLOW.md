@@ -221,6 +221,13 @@ stopped before generation because ERNIEKit's HF export did not include
 runner now loads the unchanged official base processor/chat template and the
 fine-tuned model weights separately, avoiding mutation of the saved artifact.
 
+The next inference attempt again loaded all weights, but the ERNIEKit-exported
+config caused the vision encoder to return a tuple while Transformers expected a
+model-output object. The loader now uses the official base runtime config with
+`return_dict=True` for both the composite and vision configs, while continuing
+to source every trained tensor from the saved artifact. It also preserves the
+official `tie_word_embeddings=False`; no checkpoint file is edited.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129

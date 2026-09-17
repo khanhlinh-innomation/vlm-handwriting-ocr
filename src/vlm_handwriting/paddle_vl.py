@@ -56,7 +56,7 @@ def load_paddle_vl_checkpoint(
 ) -> tuple[Any, Any, Any, Any, Any]:
     """Reload ERNIEKit HF weights with the unchanged official base processor."""
     import torch
-    from transformers import AutoModelForImageTextToText, AutoProcessor
+    from transformers import AutoConfig, AutoModelForImageTextToText, AutoProcessor
 
     checkpoint = validate_paddle_checkpoint(checkpoint_path)
     local_config = copy.deepcopy(config)
@@ -73,9 +73,16 @@ def load_paddle_vl_checkpoint(
     # ERNIEKit saves processor/tokenizer configs but not chat_template.jinja.
     # SFT does not modify preprocessing, so keep the official base processor
     # and load only the trained model weights from the local HF artifact.
-    processor = AutoProcessor.from_pretrained(str(local_config["model"]["id"]))
+    base_model_id = str(local_config["model"]["id"])
+    processor = AutoProcessor.from_pretrained(base_model_id)
+    runtime_config = AutoConfig.from_pretrained(base_model_id)
+    runtime_config.return_dict = True
+    runtime_config.tie_word_embeddings = False
+    if hasattr(runtime_config, "vision_config"):
+        runtime_config.vision_config.return_dict = True
     model = AutoModelForImageTextToText.from_pretrained(
         str(checkpoint),
+        config=runtime_config,
         dtype=dtype,
     ).to(device).eval()
     return torch, processor, model, device, dtype
