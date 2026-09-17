@@ -230,6 +230,35 @@ set -o pipefail
 Use only the lowest validation CER to select the final checkpoint. Do not choose by
 training loss, validation loss, or test performance.
 
+The completed validation ranking selected `checkpoint-1191` (epoch 3):
+
+| Rank | Checkpoint | Validation CER | Validation WER |
+|---:|---|---:|---:|
+| 1 | `checkpoint-1191` | 0.273863 | 0.597665 |
+| 2 | `checkpoint-794` | 0.277902 | 0.603886 |
+| 3 | `checkpoint-397` | 0.313713 | 0.677960 |
+
+The winner was selected from all 682 validation lines and is now frozen. Evaluate
+that one checkpoint on the 201-row test split exactly once:
+
+```bash
+cd /workspace/vlm-handwriting/repo
+export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
+set -o pipefail
+
+/workspace/vlm-handwriting/venvs/teleocr/bin/python \
+  scripts/benchmark_teleocr_adapter.py \
+  --adapter-path /workspace/vlm-handwriting/checkpoints/teleocr/lora_full/checkpoint-1191 \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --split test \
+  --allow-test \
+  2>&1 | tee /workspace/vlm-handwriting/logs/teleocr-lora-test.log
+```
+
+Do not rerun test with another checkpoint or use this result to alter the recipe.
+
 Generated artifacts remain outside Git under:
 
 ```text
