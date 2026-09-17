@@ -1,10 +1,14 @@
 model:
   id: PaddlePaddle/PaddleOCR-VL-1.6
   name: PaddleOCR-VL-1.6
-  prompt_label: ocr
+  engine: transformers
+  prompt: "OCR:"
 
 generation:
   max_new_tokens: 256
+  do_sample: false
+  repetition_penalty: 1.0
+  use_cache: true
 
 evaluation:
   smoke_size: 20
