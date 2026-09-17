@@ -85,6 +85,13 @@ After confirming that the one-image prediction contains transcription only, run:
 Review per-line predictions and any repetition outlier before freezing the base
 generation configuration. The test split remains sealed during this gate.
 
+Smoke20 completed successfully: corpus CER 0.235016, WER 0.631034, mean latency
+0.412 seconds, p90 latency 0.508 seconds, throughput 2.355 samples/s, peak
+allocated VRAM 1.869 GiB, and total runtime 8.493 seconds. Before freezing the
+configuration, inspect the three rows with highest sample CER for unexpected
+markup, special tokens, or repetition. Artifacts are under
+`outputs/paddleocr_vl/base/20260917T171155Z`.
+
 ## Remaining order
 
 1. Run the fixed 20-row validation smoke and inspect repetition/output shape.
