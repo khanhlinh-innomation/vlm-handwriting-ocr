@@ -6,6 +6,7 @@ model:
 
 generation:
   do_sample: false
+  use_cache: true
   max_new_tokens: 512
 
 evaluation:

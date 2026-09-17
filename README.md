@@ -28,6 +28,8 @@ Do not regenerate the split or tune against the test set.
 - `checkpoint-1191` reduced test CER from 31.95% to 12.46% and WER from 77.41% to 29.01%.
 - The final GLM result and accuracy/latency tradeoffs are documented in
   [GLM results](docs/GLM_RESULTS.md).
+- The next active experiment is the gated TeleOCR base benchmark documented in
+  [TeleOCR workflow](docs/TELEOCR_WORKFLOW.md).
 
 See [the canonical project context](docs/PROJECT_CONTEXT.md), [experiment protocol](docs/EXPERIMENT_PROTOCOL.md), and [server setup](docs/SERVER_SETUP.md).
 The gated GLM LoRA workflow is documented in [GLM training](docs/GLM_TRAINING.md).
@@ -99,6 +101,29 @@ Inspect the ground truth and prediction artifact before changing `--mode one` to
 The files under `notebooks/legacy_colab/` are historical Colab references. The reproducible Vast execution path uses `scripts/` and shared code under `src/`; a notebook is optional for visual inspection and is not required for benchmark or training jobs.
 
 Run long jobs inside `tmux`. The laptop and SSH connection may disconnect after detaching, but the Vast instance itself must remain running.
+
+## TeleOCR base benchmark
+
+TeleOCR uses a separate model-native runner while preserving the same frozen rows,
+metrics, artifacts, deterministic validation smoke set, and explicit test gate as GLM-OCR.
+Start with one validation image; do not jump directly to smoke, test, or training:
+
+```bash
+cd /workspace/vlm-handwriting/repo
+git pull --ff-only
+uv pip install --python /venv/main/bin/python -r requirements/teleocr.txt
+export HF_HOME=/workspace/vlm-handwriting/cache/huggingface
+
+/venv/main/bin/python scripts/benchmark_teleocr.py \
+  --manifest-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/hwdb-manifest/versions/1/uit_hwdb_line_ready \
+  --raw-root /workspace/vlm-handwriting/data/kagglehub/datasets/ntklinhfitus/uit-hwdb/versions/1/UIT_HWDB_line/UIT_HWDB_line \
+  --output-root /workspace/vlm-handwriting/outputs \
+  --mode one \
+  2>&1 | tee /workspace/vlm-handwriting/logs/teleocr-base-one.log
+```
+
+Continue through smoke20 and the one-time base test only after reviewing each gate.
+See [TeleOCR workflow](docs/TELEOCR_WORKFLOW.md) for the complete order and commands.
 
 ## Licensing
 
