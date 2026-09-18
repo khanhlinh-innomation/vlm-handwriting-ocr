@@ -260,6 +260,19 @@ After freezing the lowest-validation-CER checkpoint, evaluate only that path on
 test by adding `--split test --allow-test`. The runner rejects multiple
 checkpoints on test.
 
+Full-validation ranking completed on all 682 rows:
+
+| Rank | Checkpoint | CER | WER |
+|---:|---|---:|---:|
+| 1 | `checkpoint-300` | 0.040586 | 0.096947 |
+| 2 | `checkpoint-200` | 0.041546 | 0.101828 |
+| 3 | `checkpoint-100` | 0.049422 | 0.124701 |
+
+`checkpoint-300` is frozen for the single authorized test evaluation. Its
+validation run processed 682 lines in 267.792 seconds at 2.5467 samples/s and
+used 1.926 GiB peak inference VRAM. Validation artifacts are stored under
+`outputs/paddleocr_vl/full_sft/validation/20260917T234405Z`.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
