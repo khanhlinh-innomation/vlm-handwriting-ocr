@@ -23,13 +23,14 @@ Do not regenerate the split or tune against the test set.
 ## Repository status
 
 - The frozen data contract has been verified against all 7,229 images on the Vast server.
-- The GLM-OCR pipeline is complete: frozen base test, LoRA smoke, three-epoch full train,
-  validation-CER checkpoint selection, and one frozen fine-tuned test.
-- `checkpoint-1191` reduced test CER from 31.95% to 12.46% and WER from 77.41% to 29.01%.
-- The final GLM result and accuracy/latency tradeoffs are documented in
-  [GLM results](docs/GLM_RESULTS.md).
-- The next active experiment is the gated TeleOCR base benchmark documented in
-  [TeleOCR workflow](docs/TELEOCR_WORKFLOW.md).
+- The GLM-OCR, TeleOCR, and PaddleOCR-VL pipelines are complete through frozen
+  base tests, training smoke gates, full training, validation-CER checkpoint
+  selection, and one final test per selected checkpoint.
+- PaddleOCR-VL full-SFT `checkpoint-300` is the recommended round-one model:
+  test CER 5.40%, WER 12.77%, exact-line accuracy 43.28%, and mean latency 0.374 s.
+- See the [final three-model results](docs/FINAL_RESULTS.md),
+  [GLM results](docs/GLM_RESULTS.md), [TeleOCR workflow](docs/TELEOCR_WORKFLOW.md),
+  and [PaddleOCR-VL workflow](docs/PADDLE_WORKFLOW.md).
 
 See [the canonical project context](docs/PROJECT_CONTEXT.md), [experiment protocol](docs/EXPERIMENT_PROTOCOL.md), and [server setup](docs/SERVER_SETUP.md).
 The gated GLM LoRA workflow is documented in [GLM training](docs/GLM_TRAINING.md).

@@ -273,6 +273,30 @@ validation run processed 682 lines in 267.792 seconds at 2.5467 samples/s and
 used 1.926 GiB peak inference VRAM. Validation artifacts are stored under
 `outputs/paddleocr_vl/full_sft/validation/20260917T234405Z`.
 
+## Final frozen-test result
+
+The single authorized test run evaluated `checkpoint-300` on all 201 frozen
+test lines:
+
+| Metric | Paddle base | Full SFT checkpoint-300 | Change |
+|---|---:|---:|---:|
+| CER | 0.263166 | **0.054038** | **79.47% relative reduction** |
+| WER | 0.629741 | **0.127745** | **79.71% relative reduction** |
+| Exact-line accuracy | 0.004975 | **0.432836** | **+42.79 percentage points** |
+| Mean latency | 0.4068 s | **0.3742 s** | 8.02% lower |
+| Throughput | 2.3745 samples/s | **2.5438 samples/s** | 7.13% higher |
+| Peak inference VRAM | 1.925 GiB | 1.925 GiB | effectively unchanged |
+
+The run completed in 79.015 seconds with p50 latency 0.3705 seconds and p90
+latency 0.4801 seconds. Artifacts are stored under
+`outputs/paddleocr_vl/full_sft/test/20260918T000654Z`. The test split is now
+sealed; no checkpoint, prompt, or decoding selection may use this result.
+
+Among the three adapted models on the same 201-line test split, PaddleOCR-VL
+is the recommended round-one model: its 5.40% CER is lower than GLM-OCR's
+12.46% and TeleOCR's 28.95%, while it also has the best WER, exact-line
+accuracy, latency, and inference memory result.
+
 ## Remaining order
 
 1. Install ERNIEKit release/v1.5 under the verified PaddlePaddle 3.3.0/cu129
