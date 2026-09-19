@@ -1,0 +1,37 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Missing validation function in 'RotaryEmbeddingConfigMixin' for 'rope_type'='axial'
+Missing validation function in 'RotaryEmbeddingConfigMixin' for 'rope_type'='axial'
+Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   7%|▋         | 34/510 [00:00<00:01, 339.95it/s]Loading weights:  16%|█▋        | 84/510 [00:00<00:00, 429.80it/s]Loading weights:  26%|██▌       | 132/510 [00:00<00:00, 450.42it/s]Loading weights:  39%|███▉      | 201/510 [00:00<00:00, 544.09it/s]Loading weights:  63%|██████▎   | 323/510 [00:00<00:00, 774.67it/s]Loading weights:  86%|████████▌ | 437/510 [00:00<00:00, 891.13it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 747.93it/s]
+[glm-ocr 1/4] latency=28.997s chars=3068 file=page-001.png
+[glm-ocr 2/4] latency=5.749s chars=527 file=page-002.png
+[glm-ocr 3/4] latency=16.066s chars=1214 file=page-001.png
+[glm-ocr 4/4] latency=6.997s chars=654 file=page-002.png
+{
+  "batch_size": 1,
+  "benchmark_runtime_sec": 58.928765485063195,
+  "checkpoint_path": "/workspace/vlm-handwriting/checkpoints/glm_ocr/lora_full/checkpoint-1191",
+  "config_file": "/workspace/vlm-handwriting/repo/configs/glm/base.yaml",
+  "dtype": "torch.bfloat16",
+  "generation": {
+    "do_sample": false,
+    "max_new_tokens": 1024,
+    "repetition_penalty": 1.1
+  },
+  "generation_pages_per_sec": 0.0691926874044323,
+  "generation_time_sec": 57.80957713956013,
+  "gpu_name": "NVIDIA GeForce RTX 5090",
+  "input_root": "/workspace/vlm-handwriting/benchmark/pilot_2_forms/inputs",
+  "latency_mean_sec": 14.452394284890033,
+  "latency_p50_sec": 11.531549040111713,
+  "latency_p90_sec": 28.99709107913077,
+  "model": "glm-ocr",
+  "model_load_sec": 16.844459388172254,
+  "note": "Four-page quality pilot; no warmup. Do not use as the final 100-form perf score.",
+  "output_root": "/workspace/vlm-handwriting/benchmark/pilot_2_forms/results",
+  "pages": 4,
+  "pages_per_sec": 0.06787856434925467,
+  "peak_gpu_vram_gb": 3.006317138671875,
+  "prompt": "Text Recognition:",
+  "warmup_pages": 0
+}
+Text artifacts: /workspace/vlm-handwriting/benchmark/pilot_2_forms/results

@@ -1,0 +1,12 @@
+{
+  "cer": 0.6236263736263736,
+  "exact_line_accuracy": 0.0,
+  "ground_truth_root": "/workspace/vlm-handwriting/benchmark/pilot_2_forms/ground_truth",
+  "model": "paddleocr-vl",
+  "pages": 4,
+  "prediction_root": "/workspace/vlm-handwriting/benchmark/pilot_2_forms/results",
+  "privacy_note": "Text content is intentionally excluded from score artifacts.",
+  "total_ground_truth_chars": 4368,
+  "total_prediction_chars": 3684,
+  "wer": 0.8925438596491229
+}
