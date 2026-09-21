@@ -14,7 +14,6 @@ lora_target: all
 ### document-disjoint printed pages + handwriting replay
 dataset_dir: /workspace/vlm-handwriting/data/llamafactory/glm_ocr_meddies
 dataset: meddies_train,uit_hwdb_line_train
-eval_dataset: meddies_validation
 mix_strategy: interleave_over
 interleave_probs: 0.8,0.2
 template: glm_ocr
@@ -46,8 +45,7 @@ ddp_timeout: 180000000
 resume_from_checkpoint: null
 skip_memory_metrics: false
 
-### validation loss; OCR checkpoint ranking remains a separate generation pass
-do_eval: true
-per_device_eval_batch_size: 1
-eval_strategy: epoch
-predict_with_generate: false
+### validation is run separately per domain because LLaMA-Factory v0.9.5
+### applies training interleave probabilities to eval datasets as well
+do_eval: false
+eval_strategy: "no"

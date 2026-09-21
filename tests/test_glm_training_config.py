@@ -42,7 +42,9 @@ def test_meddies_continuation_config_preserves_handwriting_adapter() -> None:
     assert config["dataset"] == "meddies_train,uit_hwdb_line_train"
     assert config["mix_strategy"] == "interleave_over"
     assert config["interleave_probs"] == "0.8,0.2"
-    assert config["eval_dataset"] == "meddies_validation"
+    assert "eval_dataset" not in config
+    assert config["do_eval"] is False
+    assert config["eval_strategy"] == "no"
     assert "test" not in str(config).lower()
     assert config["learning_rate"] == 3.0e-5
     assert config["num_train_epochs"] == 3.0
@@ -53,7 +55,9 @@ def test_meddies_continuation_config_preserves_handwriting_adapter() -> None:
 def test_meddies_continuation_smoke_is_two_steps() -> None:
     config = load_config("meddies_continued_lora_smoke.yaml")
     assert config["dataset"] == "meddies_train_smoke,uit_hwdb_line_train_smoke"
-    assert config["eval_dataset"] == "meddies_validation_smoke"
+    assert "eval_dataset" not in config
+    assert config["do_eval"] is False
+    assert config["eval_strategy"] == "no"
     assert config["learning_rate"] == 3.0e-5
     assert config["max_steps"] == 2
     assert config["overwrite_output_dir"] is False
