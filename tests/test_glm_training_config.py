@@ -33,3 +33,27 @@ def test_full_config_preserves_official_lora_recipe() -> None:
     assert config["num_train_epochs"] == 3.0
     assert config["bf16"] is True
     assert config["overwrite_output_dir"] is False
+
+
+def test_meddies_continuation_config_preserves_handwriting_adapter() -> None:
+    config = load_config("meddies_continued_lora.yaml")
+    assert config["adapter_name_or_path"].endswith("checkpoint-1191")
+    assert config["create_new_adapter"] is False
+    assert config["dataset"] == "meddies_train,uit_hwdb_line_train"
+    assert config["mix_strategy"] == "interleave_over"
+    assert config["interleave_probs"] == "0.8,0.2"
+    assert config["eval_dataset"] == "meddies_validation"
+    assert "test" not in str(config).lower()
+    assert config["learning_rate"] == 3.0e-5
+    assert config["num_train_epochs"] == 3.0
+    assert config["cutoff_len"] == 4096
+    assert config["overwrite_output_dir"] is False
+
+
+def test_meddies_continuation_smoke_is_two_steps() -> None:
+    config = load_config("meddies_continued_lora_smoke.yaml")
+    assert config["dataset"] == "meddies_train_smoke,uit_hwdb_line_train_smoke"
+    assert config["eval_dataset"] == "meddies_validation_smoke"
+    assert config["learning_rate"] == 3.0e-5
+    assert config["max_steps"] == 2
+    assert config["overwrite_output_dir"] is False

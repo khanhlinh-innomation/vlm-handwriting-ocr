@@ -1,0 +1,53 @@
+### model
+model_name_or_path: zai-org/GLM-OCR
+adapter_name_or_path: /workspace/vlm-handwriting/checkpoints/glm_ocr/lora_full/checkpoint-1191
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+create_new_adapter: false
+lora_rank: 8
+lora_target: all
+
+### document-disjoint printed pages + handwriting replay
+dataset_dir: /workspace/vlm-handwriting/data/llamafactory/glm_ocr_meddies
+dataset: meddies_train,uit_hwdb_line_train
+eval_dataset: meddies_validation
+mix_strategy: interleave_over
+interleave_probs: 0.8,0.2
+template: glm_ocr
+cutoff_len: 4096
+preprocessing_num_workers: 8
+dataloader_num_workers: 2
+
+### versioned output
+output_dir: /workspace/vlm-handwriting/checkpoints/glm_ocr/meddies_continued_lora_3e-5
+logging_steps: 10
+save_strategy: epoch
+save_total_limit: 3
+plot_loss: true
+overwrite_output_dir: false
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16
+learning_rate: 3.0e-5
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+fp16: false
+seed: 42
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+skip_memory_metrics: false
+
+### validation loss; OCR checkpoint ranking remains a separate generation pass
+do_eval: true
+per_device_eval_batch_size: 1
+eval_strategy: epoch
+predict_with_generate: false

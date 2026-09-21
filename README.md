@@ -99,6 +99,12 @@ Run exactly one fixed validation sample first:
 
 Inspect the ground truth and prediction artifact before changing `--mode one` to `--mode smoke`. After smoke review, freeze the prompt and decoding configuration, then run the test baseline once with `--mode test --allow-test`.
 
+The next GLM phase continues the selected handwriting adapter on document-disjoint
+MeddiesOCR pages with frozen UIT-HWDB replay. See
+[GLM-OCR MeddiesOCR training](docs/GLM_MEDDIES_TRAINING.md) for the pinned dataset
+revision, preparation commands, `3e-5` learning rate, three-epoch configuration,
+and the boundary between local preparation and GPU execution.
+
 The files under `notebooks/legacy_colab/` are historical Colab references. The reproducible Vast execution path uses `scripts/` and shared code under `src/`; a notebook is optional for visual inspection and is not required for benchmark or training jobs.
 
 Run long jobs inside `tmux`. The laptop and SSH connection may disconnect after detaching, but the Vast instance itself must remain running.
