@@ -38,17 +38,36 @@ if [[ "$SMOKE" == "1" ]]; then
   EPOCH_ARGS=(--max_steps 2 --save_steps 2 --save_strategy steps --save_total_limit 1)
   rm -rf "$OUTPUT"
 else
-  META="$DATA/meta_train.json"
-  OUTPUT="$ROOT/checkpoints/vintern_1b_v3_5/divorce_lora_10epoch"
-  LOG="$ROOT/logs/vintern-divorce-lora-10epoch.log"
+  # EPOCHS and SAVE_EPOCHS are overridable so a longer schedule does not need a
+  # second copy of this script. The cosine schedule spans EPOCHS, so a 30-epoch
+  # run is not a continuation of a 10-epoch one: it anneals over its own length.
+  EPOCHS="${EPOCHS:-10}"
   # InternVL writes the whole model per checkpoint (~2.0 GB), not just the LoRA
-  # adapter, so saving all ten epochs would need ~21 GB and fill the disk.
-  # SAVE_EPOCHS keeps 3 and 7; epoch 10 is the final save at the output root.
-  export SAVE_EPOCHS=3,7
-  EPOCH_ARGS=(--num_train_epochs 10 --save_strategy epoch --save_total_limit 10)
+  # adapter, so every epoch would exhaust the disk. Keep a handful; the last
+  # epoch is always written to the output root by the final save_model().
+  if [[ "$EPOCHS" == "10" ]]; then
+    export SAVE_EPOCHS="${SAVE_EPOCHS:-3,7}"
+  else
+    export SAVE_EPOCHS="${SAVE_EPOCHS:?set SAVE_EPOCHS for a non-default schedule}"
+  fi
+  META="$DATA/meta_train.json"
+  OUTPUT="${OUTPUT:-$ROOT/checkpoints/vintern_1b_v3_5/divorce_lora_${EPOCHS}epoch}"
+  LOG="$ROOT/logs/vintern-divorce-lora-${EPOCHS}epoch.log"
+  EPOCH_ARGS=(--num_train_epochs "$EPOCHS" --save_strategy epoch --save_total_limit 20)
+
   if [[ -e "$OUTPUT" ]]; then
     echo "Refusing to overwrite existing output: $OUTPUT" >&2
     exit 2
+  fi
+
+  # Each retained checkpoint is ~2.0 GB and the final save adds one more.
+  need_gb=$(( ( $(tr ',' ' ' <<<"$SAVE_EPOCHS" | wc -w) + 1 ) * 2 ))
+  free_gb=$(df -BG --output=avail /workspace | tail -1 | tr -dc '0-9')
+  echo "Checkpoint budget: ~${need_gb} GB needed, ${free_gb} GB free"
+  if (( free_gb < need_gb + 3 )); then
+    echo "Not enough disk: ~${need_gb} GB needed plus 3 GB headroom, ${free_gb} GB free." >&2
+    echo "Reduce SAVE_EPOCHS or free space first." >&2
+    exit 3
   fi
 fi
 
