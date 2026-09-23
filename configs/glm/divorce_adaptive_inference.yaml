@@ -1,0 +1,17 @@
+model:
+  id: zai-org/GLM-OCR
+  name: GLM-OCR
+  prompt: "Text Recognition:"
+
+generation:
+  do_sample: false
+  max_new_tokens: 2048
+  repetition_penalty: 1.1
+  # First pass stays identical to the historical benchmark. Retry only when
+  # generation reaches the token cap without EOS.
+  fallback_no_repeat_ngram_size: 8
+
+evaluation:
+  smoke_size: 20
+  smoke_seed: 42
+  test: false
