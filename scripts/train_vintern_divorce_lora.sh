@@ -41,6 +41,10 @@ else
   META="$DATA/meta_train.json"
   OUTPUT="$ROOT/checkpoints/vintern_1b_v3_5/divorce_lora_10epoch"
   LOG="$ROOT/logs/vintern-divorce-lora-10epoch.log"
+  # InternVL writes the whole model per checkpoint (~2.0 GB), not just the LoRA
+  # adapter, so saving all ten epochs would need ~21 GB and fill the disk.
+  # SAVE_EPOCHS keeps 3 and 7; epoch 10 is the final save at the output root.
+  export SAVE_EPOCHS=3,7
   EPOCH_ARGS=(--num_train_epochs 10 --save_strategy epoch --save_total_limit 10)
   if [[ -e "$OUTPUT" ]]; then
     echo "Refusing to overwrite existing output: $OUTPUT" >&2

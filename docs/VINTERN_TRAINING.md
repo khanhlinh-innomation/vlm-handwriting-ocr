@@ -16,10 +16,38 @@ bash /workspace/vlm-handwriting/repo/scripts/train_vintern_divorce_lora.sh
 Nothing else needs preparing. The environment, the training repo, the converted
 dataset and the meta files are already on the server.
 
-Checkpoints land per epoch in
-`checkpoints/vintern_1b_v3_5/divorce_lora_10epoch`. The script refuses to start
-if that directory already exists, so a rerun cannot silently overwrite a
-finished run.
+Checkpoints land in `checkpoints/vintern_1b_v3_5/divorce_lora_10epoch`. The
+script refuses to start if that directory already exists, so a rerun cannot
+silently overwrite a finished run.
+
+### Checkpoints are saved at epochs 3, 7 and 10 only
+
+InternVL writes the **whole model** at every checkpoint, not just the LoRA
+adapter: about 2.0 GB each, against roughly 170 MB for the GLM runs under
+LLaMA-Factory. Ten epoch checkpoints would need about 21 GB and the instance had
+20 GB free, so an unmodified ten-epoch run fills the disk near the end and loses
+everything. A two-step smoke does not expose this, because it saves once.
+
+`save_total_limit` cannot express the fix — it keeps the *last* N, and with only
+220 divorce pages the best checkpoint may well be an early one. Staged runs with
+`--resume_from_checkpoint` would work but rebuild the cosine schedule at each
+stage, so the run would no longer match one continuous schedule.
+
+`scripts/patch_internvl_selective_epoch_save.py` adds a callback that suppresses
+saving at any epoch not listed in `SAVE_EPOCHS`. It is registered after the
+default flow callback, so it clears the save flag the default callback just set;
+a callback-order test confirms epochs 3 and 7 save and the rest do not. The
+training script sets `SAVE_EPOCHS=3,7`, and epoch 10 is the final `save_model()`
+at the output root. Three artifacts, about 5.9 GB:
+
+| Artifact | Epoch | Resume state |
+|---|---|---|
+| `checkpoint-84/` | 3 | yes |
+| `checkpoint-196/` | 7 | yes |
+| output root | 10 | model only |
+
+Re-apply after any `git pull` of the training repo, alongside the FlashAttention
+patch.
 
 ## Why not LLaMA-Factory
 
@@ -213,8 +241,15 @@ CPU-only, no GPU and no writes:
   is the `lora_B` matrices, which is what moves first. From step 2 onward both
   halves receive gradient.
 
-**Not verified:** measured peak VRAM. That needs the GPU, so run `--smoke`
-before the full run and watch the reported peak.
+The smoke gate then passed on the GPU: 2/2 optimizer steps, train loss 0.1392,
+42.3 s runtime, adapter and tokenizer written. Two startup faults surfaced there
+and are fixed in the script — `LAUNCHER` defaults to `slurm` in
+`internvl_chat_finetune.py:607` and must be set to `pytorch`, and
+`--use_fast_tokenizer` is not an accepted argument in this fork, which hardcodes
+`use_fast=False` when building the tokenizer.
+
+**Not measured:** peak VRAM. `skip_memory_metrics` is on, so the trainer does not
+report it; watch `nvidia-smi` during the run if the number is wanted.
 
 ## After training
 
